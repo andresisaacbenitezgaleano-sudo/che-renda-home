@@ -3,19 +3,14 @@ import { Link } from "@tanstack/react-router";
 import { User, History, Settings, MessageSquare, Megaphone, Home as HomeIcon } from "lucide-react";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
-import { AuthProvider } from "./AuthContext";
-import { AuthModal } from "./AuthModal";
 
 export function SiteShell({ children }: { children: ReactNode }) {
   return (
-    <AuthProvider>
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <AuthModal />
-        <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">{children}</main>
-        <Footer />
-      </div>
-    </AuthProvider>
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">{children}</main>
+      <Footer />
+    </div>
   );
 }
 
