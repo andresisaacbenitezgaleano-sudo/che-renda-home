@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as MensajesRouteImport } from './routes/mensajes'
 import { Route as HistorialRouteImport } from './routes/historial'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropiedadIdRouteImport } from './routes/propiedad.$id'
@@ -17,6 +18,11 @@ import { Route as PropiedadIdRouteImport } from './routes/propiedad.$id'
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MensajesRoute = MensajesRouteImport.update({
+  id: '/mensajes',
+  path: '/mensajes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HistorialRoute = HistorialRouteImport.update({
@@ -38,12 +44,14 @@ const PropiedadIdRoute = PropiedadIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/historial': typeof HistorialRoute
+  '/mensajes': typeof MensajesRoute
   '/perfil': typeof PerfilRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/historial': typeof HistorialRoute
+  '/mensajes': typeof MensajesRoute
   '/perfil': typeof PerfilRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
@@ -51,20 +59,28 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/historial': typeof HistorialRoute
+  '/mensajes': typeof MensajesRoute
   '/perfil': typeof PerfilRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/historial' | '/perfil' | '/propiedad/$id'
+  fullPaths: '/' | '/historial' | '/mensajes' | '/perfil' | '/propiedad/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/historial' | '/perfil' | '/propiedad/$id'
-  id: '__root__' | '/' | '/historial' | '/perfil' | '/propiedad/$id'
+  to: '/' | '/historial' | '/mensajes' | '/perfil' | '/propiedad/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/historial'
+    | '/mensajes'
+    | '/perfil'
+    | '/propiedad/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HistorialRoute: typeof HistorialRoute
+  MensajesRoute: typeof MensajesRoute
   PerfilRoute: typeof PerfilRoute
   PropiedadIdRoute: typeof PropiedadIdRoute
 }
@@ -76,6 +92,13 @@ declare module '@tanstack/react-router' {
       path: '/perfil'
       fullPath: '/perfil'
       preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mensajes': {
+      id: '/mensajes'
+      path: '/mensajes'
+      fullPath: '/mensajes'
+      preLoaderRoute: typeof MensajesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/historial': {
@@ -105,6 +128,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HistorialRoute: HistorialRoute,
+  MensajesRoute: MensajesRoute,
   PerfilRoute: PerfilRoute,
   PropiedadIdRoute: PropiedadIdRoute,
 }
