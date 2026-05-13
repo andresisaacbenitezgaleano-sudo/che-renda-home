@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/site/Navbar";
 import { SearchBar } from "@/components/site/SearchBar";
 import { PropertyCard, type Property } from "@/components/site/PropertyCard";
 import { Footer } from "@/components/site/Footer";
-import { AuthProvider } from "@/components/site/AuthContext";
-import { AuthModal } from "@/components/site/AuthModal";
+import { supabase } from "@/integrations/supabase/client";
 import hero from "@/assets/hero-villa.jpg";
 import p1 from "@/assets/prop-1.jpg";
 import p2 from "@/assets/prop-2.jpg";
@@ -33,65 +33,35 @@ export const Route = createFileRoute("/")({
   }),
 });
 
-const PROPERTIES: Property[] = [
-  {
-    id: "1",
-    title: "Villa Costa al atardecer",
-    location: "Punta del Este, Uruguay",
-    pricePerNight: 320,
-    rating: 4.92,
-    image: p1,
-  },
-  {
-    id: "2",
-    title: "Cabaña alpina con chimenea",
-    location: "Bariloche, Argentina",
-    pricePerNight: 185,
-    rating: 4.87,
-    image: p2,
-  },
-  {
-    id: "3",
-    title: "Loft urbano con vista panorámica",
-    location: "São Paulo, Brasil",
-    pricePerNight: 240,
-    rating: 4.81,
-    image: p3,
-  },
-  {
-    id: "4",
-    title: "Casa de campo entre viñedos",
-    location: "Mendoza, Argentina",
-    pricePerNight: 210,
-    rating: 4.95,
-    image: p4,
-  },
-  {
-    id: "5",
-    title: "Bungalow tropical sobre el agua",
-    location: "Cartagena, Colombia",
-    pricePerNight: 410,
-    rating: 4.98,
-    image: p5,
-  },
-  {
-    id: "6",
-    title: "Cottage escandinavo junto al lago",
-    location: "Villarrica, Chile",
-    pricePerNight: 175,
-    rating: 4.78,
-    image: p6,
-  },
-];
+const FALLBACKS = [p1, p2, p3, p4, p5, p6];
 
 function Index() {
   const [resetKey, setResetKey] = useState(0);
 
+  const { data: properties = [], isLoading } = useQuery({
+    queryKey: ["properties", "active"],
+    queryFn: async (): Promise<Property[]> => {
+      const { data, error } = await supabase
+        .from("properties")
+        .select("id, title, city, department, price, images")
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(24);
+      if (error) throw error;
+      return (data ?? []).map((p, i) => ({
+        id: p.id,
+        title: p.title,
+        location: [p.city, p.department].filter(Boolean).join(", ") || "Paraguay",
+        pricePerNight: Number(p.price ?? 0),
+        rating: 4.9,
+        image: p.images?.[0] || FALLBACKS[i % FALLBACKS.length],
+      }));
+    },
+  });
+
   return (
-    <AuthProvider>
     <div className="min-h-screen bg-background">
       <Navbar onReset={() => setResetKey((k) => k + 1)} />
-      <AuthModal />
 
       <section className="relative">
         <div className="relative h-[420px] w-full overflow-hidden md:h-[520px]">
@@ -102,10 +72,7 @@ function Index() {
             height={1280}
             className="h-full w-full object-cover"
           />
-          <div
-            className="absolute inset-0"
-            style={{ background: "var(--gradient-hero)" }}
-          />
+          <div className="absolute inset-0" style={{ background: "var(--gradient-hero)" }} />
           <div className="absolute inset-0 flex items-center justify-center px-4">
             <div className="max-w-3xl text-center text-primary-foreground">
               <h1 className="font-display text-4xl font-bold leading-tight drop-shadow-lg sm:text-5xl md:text-6xl">
@@ -135,20 +102,27 @@ function Index() {
               Una selección curada por viajeros como vos.
             </p>
           </div>
-          <button className="hidden text-sm font-semibold text-primary hover:underline md:inline">
-            Ver todos →
-          </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-          {PROPERTIES.map((p) => (
-            <PropertyCard key={p.id} property={p} />
-          ))}
-        </div>
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Cargando alojamientos…</p>
+        ) : properties.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border/60 p-10 text-center">
+            <p className="font-display text-lg font-semibold">Aún no hay publicaciones activas.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Sé el primer anfitrión: publicá tu propiedad desde el menú.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+            {properties.map((p) => (
+              <PropertyCard key={p.id} property={p} />
+            ))}
+          </div>
+        )}
       </main>
 
       <Footer />
     </div>
-    </AuthProvider>
   );
 }

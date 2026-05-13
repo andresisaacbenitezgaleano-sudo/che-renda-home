@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/site/AuthContext";
+
+type PqrsType = "peticion" | "queja" | "reclamo" | "sugerencia";
 
 export const Route = createFileRoute("/te-escuchamos")({
   head: () => ({ meta: [{ title: "Te escuchamos — Che Renda T&T" }] }),
@@ -15,19 +19,41 @@ export const Route = createFileRoute("/te-escuchamos")({
 });
 
 function PqrsPage() {
-  const [tipo, setTipo] = useState("");
+  const { user, openAuthModal } = useAuth();
+  const [tipo, setTipo] = useState<PqrsType | "">("");
   const [asunto, setAsunto] = useState("");
   const [desc, setDesc] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [busy, setBusy] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      openAuthModal();
+      return;
+    }
     if (!tipo || !asunto.trim() || !desc.trim()) {
       toast.error("Completá los campos obligatorios");
       return;
     }
+    setBusy(true);
+    const { error } = await supabase.from("pqrs_claims").insert({
+      user_id: user.id,
+      type: tipo,
+      subject: asunto.trim(),
+      description: desc.trim(),
+      attachments: files.map((f) => f.name),
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Reporte enviado. Te contactaremos pronto.");
-    setTipo(""); setAsunto(""); setDesc(""); setFiles([]);
+    setTipo("");
+    setAsunto("");
+    setDesc("");
+    setFiles([]);
   };
 
   return (
@@ -46,7 +72,7 @@ function PqrsPage() {
         >
           <div className="grid gap-2">
             <Label>Tipo de solicitud *</Label>
-            <Select value={tipo} onValueChange={setTipo}>
+            <Select value={tipo} onValueChange={(v) => setTipo(v as PqrsType)}>
               <SelectTrigger><SelectValue placeholder="Seleccioná una opción" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="peticion">Petición</SelectItem>
@@ -90,9 +116,18 @@ function PqrsPage() {
             )}
           </div>
 
-          <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-            Enviar reporte
+          <Button
+            type="submit"
+            disabled={busy}
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            {busy ? "Enviando…" : "Enviar reporte"}
           </Button>
+          {!user && (
+            <p className="text-center text-xs text-muted-foreground">
+              Necesitás iniciar sesión para enviar tu reporte.
+            </p>
+          )}
         </form>
       </div>
     </SiteShell>
