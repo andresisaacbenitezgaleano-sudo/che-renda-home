@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropiedadIdRouteImport } from './routes/propiedad.$id'
 
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -25,32 +31,43 @@ const PropiedadIdRoute = PropiedadIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/perfil': typeof PerfilRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/perfil': typeof PerfilRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/perfil': typeof PerfilRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/propiedad/$id'
+  fullPaths: '/' | '/perfil' | '/propiedad/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/propiedad/$id'
-  id: '__root__' | '/' | '/propiedad/$id'
+  to: '/' | '/perfil' | '/propiedad/$id'
+  id: '__root__' | '/' | '/perfil' | '/propiedad/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PerfilRoute: typeof PerfilRoute
   PropiedadIdRoute: typeof PropiedadIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PerfilRoute: PerfilRoute,
   PropiedadIdRoute: PropiedadIdRoute,
 }
 export const routeTree = rootRouteImport
