@@ -5,7 +5,7 @@ import {
   Users, Minus, Plus, CalendarDays,
   ChefHat, Wifi, Briefcase, Car, Cctv,
   Waves, Flame, Tv, Snowflake, Bed, Microwave, Shirt,
-  ShieldCheck, FirstAid, AlertTriangle, Bath, PawPrint,
+  ShieldCheck, HeartPulse, AlertTriangle, Bath, PawPrint,
   Trophy, Volleyball, Sparkles,
 } from "lucide-react";
 import { format, differenceInCalendarDays } from "date-fns";
