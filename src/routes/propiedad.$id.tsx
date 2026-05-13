@@ -118,6 +118,13 @@ function PropertyDetail() {
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [guests, setGuests] = useState({ adultos: 2, ninos: 0, mascotas: 0 });
+  const [availRange, setAvailRange] = useState<DateRange | undefined>();
+  const [showAllReviews, setShowAllReviews] = useState(false);
+
+  const nights =
+    availRange?.from && availRange?.to
+      ? Math.max(0, differenceInCalendarDays(availRange.to, availRange.from))
+      : 0;
 
   const basePrice = modality === "Por Noche" ? 180 : 420;
   const totalGuests = guests.adultos + guests.ninos;
