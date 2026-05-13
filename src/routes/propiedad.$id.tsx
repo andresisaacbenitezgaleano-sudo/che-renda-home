@@ -3,8 +3,12 @@ import { useState } from "react";
 import {
   Share, Heart, Star, Award, Grid3x3, ChevronDown,
   Users, Minus, Plus, CalendarDays,
+  ChefHat, Wifi, Briefcase, Car, Cctv,
+  Waves, Flame, Tv, Snowflake, Bed, Microwave, Shirt,
+  ShieldCheck, FirstAid, AlertTriangle, Bath, PawPrint,
+  Trophy, Volleyball, Sparkles,
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, differenceInCalendarDays } from "date-fns";
 import { es } from "date-fns/locale";
 import type { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
@@ -12,6 +16,9 @@ import { Calendar } from "@/components/ui/calendar";
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
