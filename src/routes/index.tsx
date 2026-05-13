@@ -4,6 +4,8 @@ import { Navbar } from "@/components/site/Navbar";
 import { SearchBar } from "@/components/site/SearchBar";
 import { PropertyCard, type Property } from "@/components/site/PropertyCard";
 import { Footer } from "@/components/site/Footer";
+import { AuthProvider } from "@/components/site/AuthContext";
+import { AuthModal } from "@/components/site/AuthModal";
 import hero from "@/assets/hero-villa.jpg";
 import p1 from "@/assets/prop-1.jpg";
 import p2 from "@/assets/prop-2.jpg";
@@ -86,8 +88,10 @@ function Index() {
   const [resetKey, setResetKey] = useState(0);
 
   return (
+    <AuthProvider>
     <div className="min-h-screen bg-background">
       <Navbar onReset={() => setResetKey((k) => k + 1)} />
+      <AuthModal />
 
       <section className="relative">
         <div className="relative h-[420px] w-full overflow-hidden md:h-[520px]">
@@ -145,5 +149,6 @@ function Index() {
 
       <Footer />
     </div>
+    </AuthProvider>
   );
 }

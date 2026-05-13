@@ -16,7 +16,6 @@ import {
   Moon,
   ChevronLeft,
 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -185,10 +184,10 @@ function MenuItem({
   }`;
   if (to) {
     return (
-      <Link to={to} className={cls} onClick={onClick}>
+      <a href={to} className={cls} onClick={onClick}>
         <Icon className="h-4 w-4 text-muted-foreground" />
         {label}
-      </Link>
+      </a>
     );
   }
   return (
