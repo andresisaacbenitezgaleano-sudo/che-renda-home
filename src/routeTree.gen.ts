@@ -9,9 +9,33 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TeEscuchamosRouteImport } from './routes/te-escuchamos'
+import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as MensajesRouteImport } from './routes/mensajes'
+import { Route as HistorialRouteImport } from './routes/historial'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropiedadIdRouteImport } from './routes/propiedad.$id'
 
+const TeEscuchamosRoute = TeEscuchamosRouteImport.update({
+  id: '/te-escuchamos',
+  path: '/te-escuchamos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MensajesRoute = MensajesRouteImport.update({
+  id: '/mensajes',
+  path: '/mensajes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistorialRoute = HistorialRouteImport.update({
+  id: '/historial',
+  path: '/historial',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -25,32 +49,95 @@ const PropiedadIdRoute = PropiedadIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/historial': typeof HistorialRoute
+  '/mensajes': typeof MensajesRoute
+  '/perfil': typeof PerfilRoute
+  '/te-escuchamos': typeof TeEscuchamosRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/historial': typeof HistorialRoute
+  '/mensajes': typeof MensajesRoute
+  '/perfil': typeof PerfilRoute
+  '/te-escuchamos': typeof TeEscuchamosRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/historial': typeof HistorialRoute
+  '/mensajes': typeof MensajesRoute
+  '/perfil': typeof PerfilRoute
+  '/te-escuchamos': typeof TeEscuchamosRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/propiedad/$id'
+  fullPaths:
+    | '/'
+    | '/historial'
+    | '/mensajes'
+    | '/perfil'
+    | '/te-escuchamos'
+    | '/propiedad/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/propiedad/$id'
-  id: '__root__' | '/' | '/propiedad/$id'
+  to:
+    | '/'
+    | '/historial'
+    | '/mensajes'
+    | '/perfil'
+    | '/te-escuchamos'
+    | '/propiedad/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/historial'
+    | '/mensajes'
+    | '/perfil'
+    | '/te-escuchamos'
+    | '/propiedad/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HistorialRoute: typeof HistorialRoute
+  MensajesRoute: typeof MensajesRoute
+  PerfilRoute: typeof PerfilRoute
+  TeEscuchamosRoute: typeof TeEscuchamosRoute
   PropiedadIdRoute: typeof PropiedadIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/te-escuchamos': {
+      id: '/te-escuchamos'
+      path: '/te-escuchamos'
+      fullPath: '/te-escuchamos'
+      preLoaderRoute: typeof TeEscuchamosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mensajes': {
+      id: '/mensajes'
+      path: '/mensajes'
+      fullPath: '/mensajes'
+      preLoaderRoute: typeof MensajesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/historial': {
+      id: '/historial'
+      path: '/historial'
+      fullPath: '/historial'
+      preLoaderRoute: typeof HistorialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -70,6 +157,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HistorialRoute: HistorialRoute,
+  MensajesRoute: MensajesRoute,
+  PerfilRoute: PerfilRoute,
+  TeEscuchamosRoute: TeEscuchamosRoute,
   PropiedadIdRoute: PropiedadIdRoute,
 }
 export const routeTree = rootRouteImport
