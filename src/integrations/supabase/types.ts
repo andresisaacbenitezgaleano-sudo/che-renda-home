@@ -14,7 +14,260 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          adults: number
+          check_in: string
+          check_out: string
+          children: number
+          created_at: string
+          guest_id: string
+          host_id: string
+          id: string
+          pets: number
+          property_id: string
+          status: Database["public"]["Enums"]["booking_status"]
+          total_price: number
+          updated_at: string
+        }
+        Insert: {
+          adults?: number
+          check_in: string
+          check_out: string
+          children?: number
+          created_at?: string
+          guest_id: string
+          host_id: string
+          id?: string
+          pets?: number
+          property_id: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          total_price?: number
+          updated_at?: string
+        }
+        Update: {
+          adults?: number
+          check_in?: string
+          check_out?: string
+          children?: number
+          created_at?: string
+          guest_id?: string
+          host_id?: string
+          id?: string
+          pets?: number
+          property_id?: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          total_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string
+          booking_id: string | null
+          created_at: string
+          id: string
+          property_id: string | null
+          read_at: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          property_id?: string | null
+          read_at?: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          property_id?: string | null
+          read_at?: string | null
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pqrs_claims: {
+        Row: {
+          attachments: string[]
+          created_at: string
+          description: string
+          id: string
+          status: string
+          subject: string
+          type: Database["public"]["Enums"]["pqrs_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attachments?: string[]
+          created_at?: string
+          description: string
+          id?: string
+          status?: string
+          subject: string
+          type: Database["public"]["Enums"]["pqrs_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attachments?: string[]
+          created_at?: string
+          description?: string
+          id?: string
+          status?: string
+          subject?: string
+          type?: Database["public"]["Enums"]["pqrs_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          accepted_at: string | null
+          accepted_privacy: boolean
+          accepted_terms: boolean
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_privacy?: boolean
+          accepted_terms?: boolean
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_privacy?: boolean
+          accepted_terms?: boolean
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          address: string | null
+          amenities: Json
+          bathrooms: number
+          beds: number
+          city: string | null
+          created_at: string
+          department: string | null
+          description: string | null
+          guests: number
+          host_id: string
+          id: string
+          images: string[]
+          pets_allowed: boolean
+          price: number
+          price_modality: Database["public"]["Enums"]["price_modality"]
+          property_type: string | null
+          rooms_ac: number
+          rooms_no_ac: number
+          status: Database["public"]["Enums"]["property_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          amenities?: Json
+          bathrooms?: number
+          beds?: number
+          city?: string | null
+          created_at?: string
+          department?: string | null
+          description?: string | null
+          guests?: number
+          host_id: string
+          id?: string
+          images?: string[]
+          pets_allowed?: boolean
+          price?: number
+          price_modality?: Database["public"]["Enums"]["price_modality"]
+          property_type?: string | null
+          rooms_ac?: number
+          rooms_no_ac?: number
+          status?: Database["public"]["Enums"]["property_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          amenities?: Json
+          bathrooms?: number
+          beds?: number
+          city?: string | null
+          created_at?: string
+          department?: string | null
+          description?: string | null
+          guests?: number
+          host_id?: string
+          id?: string
+          images?: string[]
+          pets_allowed?: boolean
+          price?: number
+          price_modality?: Database["public"]["Enums"]["price_modality"]
+          property_type?: string | null
+          rooms_ac?: number
+          rooms_no_ac?: number
+          status?: Database["public"]["Enums"]["property_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +276,10 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      booking_status: "pending" | "confirmed" | "cancelled" | "completed"
+      pqrs_type: "peticion" | "queja" | "reclamo" | "sugerencia"
+      price_modality: "per_night" | "full_weekend"
+      property_status: "active" | "paused" | "draft"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +406,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      booking_status: ["pending", "confirmed", "cancelled", "completed"],
+      pqrs_type: ["peticion", "queja", "reclamo", "sugerencia"],
+      price_modality: ["per_night", "full_weekend"],
+      property_status: ["active", "paused", "draft"],
+    },
   },
 } as const
