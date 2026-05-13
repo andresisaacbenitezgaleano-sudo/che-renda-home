@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TeEscuchamosRouteImport } from './routes/te-escuchamos'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as MensajesRouteImport } from './routes/mensajes'
 import { Route as HistorialRouteImport } from './routes/historial'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropiedadIdRouteImport } from './routes/propiedad.$id'
 
+const TeEscuchamosRoute = TeEscuchamosRouteImport.update({
+  id: '/te-escuchamos',
+  path: '/te-escuchamos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/historial': typeof HistorialRoute
   '/mensajes': typeof MensajesRoute
   '/perfil': typeof PerfilRoute
+  '/te-escuchamos': typeof TeEscuchamosRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/historial': typeof HistorialRoute
   '/mensajes': typeof MensajesRoute
   '/perfil': typeof PerfilRoute
+  '/te-escuchamos': typeof TeEscuchamosRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRoutesById {
@@ -61,19 +69,33 @@ export interface FileRoutesById {
   '/historial': typeof HistorialRoute
   '/mensajes': typeof MensajesRoute
   '/perfil': typeof PerfilRoute
+  '/te-escuchamos': typeof TeEscuchamosRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/historial' | '/mensajes' | '/perfil' | '/propiedad/$id'
+  fullPaths:
+    | '/'
+    | '/historial'
+    | '/mensajes'
+    | '/perfil'
+    | '/te-escuchamos'
+    | '/propiedad/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/historial' | '/mensajes' | '/perfil' | '/propiedad/$id'
+  to:
+    | '/'
+    | '/historial'
+    | '/mensajes'
+    | '/perfil'
+    | '/te-escuchamos'
+    | '/propiedad/$id'
   id:
     | '__root__'
     | '/'
     | '/historial'
     | '/mensajes'
     | '/perfil'
+    | '/te-escuchamos'
     | '/propiedad/$id'
   fileRoutesById: FileRoutesById
 }
@@ -82,11 +104,19 @@ export interface RootRouteChildren {
   HistorialRoute: typeof HistorialRoute
   MensajesRoute: typeof MensajesRoute
   PerfilRoute: typeof PerfilRoute
+  TeEscuchamosRoute: typeof TeEscuchamosRoute
   PropiedadIdRoute: typeof PropiedadIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/te-escuchamos': {
+      id: '/te-escuchamos'
+      path: '/te-escuchamos'
+      fullPath: '/te-escuchamos'
+      preLoaderRoute: typeof TeEscuchamosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/perfil': {
       id: '/perfil'
       path: '/perfil'
@@ -130,6 +160,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistorialRoute: HistorialRoute,
   MensajesRoute: MensajesRoute,
   PerfilRoute: PerfilRoute,
+  TeEscuchamosRoute: TeEscuchamosRoute,
   PropiedadIdRoute: PropiedadIdRoute,
 }
 export const routeTree = rootRouteImport
