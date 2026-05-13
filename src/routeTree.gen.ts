@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TeEscuchamosRouteImport } from './routes/te-escuchamos'
+import { Route as PublicarRouteImport } from './routes/publicar'
 import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as MisPropiedadesRouteImport } from './routes/mis-propiedades'
 import { Route as MensajesRouteImport } from './routes/mensajes'
 import { Route as HistorialRouteImport } from './routes/historial'
 import { Route as IndexRouteImport } from './routes/index'
@@ -21,9 +23,19 @@ const TeEscuchamosRoute = TeEscuchamosRouteImport.update({
   path: '/te-escuchamos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublicarRoute = PublicarRouteImport.update({
+  id: '/publicar',
+  path: '/publicar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MisPropiedadesRoute = MisPropiedadesRouteImport.update({
+  id: '/mis-propiedades',
+  path: '/mis-propiedades',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MensajesRoute = MensajesRouteImport.update({
@@ -51,7 +63,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/historial': typeof HistorialRoute
   '/mensajes': typeof MensajesRoute
+  '/mis-propiedades': typeof MisPropiedadesRoute
   '/perfil': typeof PerfilRoute
+  '/publicar': typeof PublicarRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
@@ -59,7 +73,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/historial': typeof HistorialRoute
   '/mensajes': typeof MensajesRoute
+  '/mis-propiedades': typeof MisPropiedadesRoute
   '/perfil': typeof PerfilRoute
+  '/publicar': typeof PublicarRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
@@ -68,7 +84,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/historial': typeof HistorialRoute
   '/mensajes': typeof MensajesRoute
+  '/mis-propiedades': typeof MisPropiedadesRoute
   '/perfil': typeof PerfilRoute
+  '/publicar': typeof PublicarRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
@@ -78,7 +96,9 @@ export interface FileRouteTypes {
     | '/'
     | '/historial'
     | '/mensajes'
+    | '/mis-propiedades'
     | '/perfil'
+    | '/publicar'
     | '/te-escuchamos'
     | '/propiedad/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -86,7 +106,9 @@ export interface FileRouteTypes {
     | '/'
     | '/historial'
     | '/mensajes'
+    | '/mis-propiedades'
     | '/perfil'
+    | '/publicar'
     | '/te-escuchamos'
     | '/propiedad/$id'
   id:
@@ -94,7 +116,9 @@ export interface FileRouteTypes {
     | '/'
     | '/historial'
     | '/mensajes'
+    | '/mis-propiedades'
     | '/perfil'
+    | '/publicar'
     | '/te-escuchamos'
     | '/propiedad/$id'
   fileRoutesById: FileRoutesById
@@ -103,7 +127,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HistorialRoute: typeof HistorialRoute
   MensajesRoute: typeof MensajesRoute
+  MisPropiedadesRoute: typeof MisPropiedadesRoute
   PerfilRoute: typeof PerfilRoute
+  PublicarRoute: typeof PublicarRoute
   TeEscuchamosRoute: typeof TeEscuchamosRoute
   PropiedadIdRoute: typeof PropiedadIdRoute
 }
@@ -117,11 +143,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeEscuchamosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/publicar': {
+      id: '/publicar'
+      path: '/publicar'
+      fullPath: '/publicar'
+      preLoaderRoute: typeof PublicarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/perfil': {
       id: '/perfil'
       path: '/perfil'
       fullPath: '/perfil'
       preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mis-propiedades': {
+      id: '/mis-propiedades'
+      path: '/mis-propiedades'
+      fullPath: '/mis-propiedades'
+      preLoaderRoute: typeof MisPropiedadesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mensajes': {
@@ -159,7 +199,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HistorialRoute: HistorialRoute,
   MensajesRoute: MensajesRoute,
+  MisPropiedadesRoute: MisPropiedadesRoute,
   PerfilRoute: PerfilRoute,
+  PublicarRoute: PublicarRoute,
   TeEscuchamosRoute: TeEscuchamosRoute,
   PropiedadIdRoute: PropiedadIdRoute,
 }
