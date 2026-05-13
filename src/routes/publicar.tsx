@@ -367,9 +367,10 @@ function PublicarPage() {
               <Button
                 type="button"
                 onClick={submit}
+                disabled={busy}
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                Publicar anuncio
+                {busy ? "Publicando…" : "Publicar anuncio"}
               </Button>
             )}
           </div>
