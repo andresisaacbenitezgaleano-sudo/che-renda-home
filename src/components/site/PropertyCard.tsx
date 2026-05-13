@@ -15,7 +15,7 @@ export interface Property {
 export function PropertyCard({ property }: { property: Property }) {
   const [fav, setFav] = useState(false);
   return (
-    <article className="group cursor-pointer">
+    <Link to="/propiedad/$id" params={{ id: property.id }} className="group block cursor-pointer">
       <div className="relative overflow-hidden rounded-2xl bg-muted shadow-[var(--shadow-card)]">
         <img
           src={property.image}
