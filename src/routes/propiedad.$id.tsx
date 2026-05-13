@@ -57,6 +57,107 @@ La casa principal tiene 4 habitaciones equipadas, sala de estar con chimenea, co
 
 A pocos pasos encontrarás restaurantes, almacenes y la costanera. Recibimos huéspedes con mascotas previa coordinación. Nuestro equipo está disponible 24/7 para cualquier consulta durante tu estadía.`;
 
+const QUICK_AMENITIES = [
+  { icon: ChefHat, label: "Cocina equipada" },
+  { icon: Wifi, label: "Wifi de alta velocidad" },
+  { icon: Briefcase, label: "Zona de trabajo" },
+  { icon: Car, label: "Estacionamiento gratuito" },
+  { icon: Cctv, label: "Cámaras de seguridad" },
+];
+
+const AMENITY_GROUPS: { title: string; items: { icon: any; label: string }[] }[] = [
+  {
+    title: "Instalaciones y Ocio",
+    items: [
+      { icon: Waves, label: "Piscina" },
+      { icon: Flame, label: "Quincho con parrilla" },
+      { icon: Snowflake, label: "Salón climatizado" },
+      { icon: Car, label: "Garage / Estacionamiento" },
+      { icon: Trophy, label: "Cancha de fútbol" },
+      { icon: Volleyball, label: "Cancha de vóley" },
+      { icon: Sparkles, label: "Mesa de pool" },
+      { icon: PawPrint, label: "Hamaca paraguaya" },
+      { icon: Flame, label: "Lugar para fogatas" },
+    ],
+  },
+  {
+    title: "Confort y Habitaciones",
+    items: [
+      { icon: Snowflake, label: "3 habitaciones con aire acondicionado" },
+      { icon: Bed, label: "1 habitación sin aire acondicionado" },
+      { icon: Bed, label: "6 camas en total" },
+      { icon: Microwave, label: "Microondas" },
+      { icon: Wifi, label: "Wifi" },
+      { icon: Briefcase, label: "Zona de trabajo" },
+      { icon: Tv, label: "TV" },
+      { icon: Shirt, label: "Espacio para guardar ropa" },
+      { icon: Bed, label: "Almohadas y mantas adicionales" },
+    ],
+  },
+  {
+    title: "Seguridad y Básicos",
+    items: [
+      { icon: Cctv, label: "Cámaras interior y exterior" },
+      { icon: HeartPulse, label: "Botiquín de primeros auxilios" },
+      { icon: AlertTriangle, label: "Detector de monóxido de carbono" },
+      { icon: AlertTriangle, label: "Detector de humo" },
+      { icon: Bath, label: "Toallas, sábanas, jabón y papel higiénico" },
+    ],
+  },
+  {
+    title: "Reglas",
+    items: [{ icon: PawPrint, label: "Se permiten mascotas" }],
+  },
+];
+
+const REVIEWS = [
+  { name: "Lucía", initial: "L", rating: 5, stay: "Estadía de una noche", date: "Marzo 2026", text: "Lugar hermoso, impecable y muy bien ubicado. Mariano súper atento, volveríamos sin dudarlo." },
+  { name: "Carlos", initial: "C", rating: 5, stay: "Estadía de un fin de semana", date: "Febrero 2026", text: "La quinta superó nuestras expectativas. La piscina y el quincho son una maravilla. Los chicos disfrutaron muchísimo de los espacios verdes y la cancha." },
+  { name: "Sofía", initial: "S", rating: 4, stay: "Estadía de dos noches", date: "Enero 2026", text: "Muy buena experiencia, todo limpio y prolijo. Recomendamos llevar repelente para las noches al aire libre." },
+  { name: "Diego", initial: "D", rating: 5, stay: "Estadía de tres noches", date: "Diciembre 2025", text: "Anfitrión 10/10. La casa está equipada con todo lo necesario y el entorno es ideal para descansar." },
+  { name: "Marina", initial: "M", rating: 5, stay: "Estadía de una noche", date: "Noviembre 2025", text: "Perfecta para una escapada corta. Vista al lago increíble." },
+  { name: "Javier", initial: "J", rating: 4, stay: "Estadía de un fin de semana", date: "Octubre 2025", text: "Excelente relación precio-calidad. La cocina está muy bien equipada." },
+  { name: "Paula", initial: "P", rating: 5, stay: "Estadía de dos noches", date: "Septiembre 2025", text: "Nos sentimos como en casa. Muy buena atención del anfitrión y todo funcionó perfecto." },
+  { name: "Tomás", initial: "T", rating: 5, stay: "Estadía de cuatro noches", date: "Agosto 2025", text: "Vacaciones inolvidables en familia. La cancha de fútbol fue un éxito con los chicos." },
+];
+
+function Stars({ n }: { n: number }) {
+  return (
+    <div className="flex gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Star key={i} className={cn("h-3.5 w-3.5", i < n ? "fill-current text-foreground" : "text-muted-foreground/40")} />
+      ))}
+    </div>
+  );
+}
+
+function ReviewCard({ r }: { r: typeof REVIEWS[number] }) {
+  const [open, setOpen] = useState(false);
+  const long = r.text.length > 140;
+  return (
+    <div className="rounded-2xl border border-border p-5">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-brand text-sm font-bold text-primary-foreground">
+          {r.initial}
+        </div>
+        <div>
+          <div className="text-sm font-semibold">{r.name}</div>
+          <div className="text-xs text-muted-foreground">{r.stay} · {r.date}</div>
+        </div>
+      </div>
+      <div className="mt-2"><Stars n={r.rating} /></div>
+      <p className={cn("mt-2 text-sm leading-relaxed", !open && long && "line-clamp-3")}>
+        {r.text}
+      </p>
+      {long && (
+        <button onClick={() => setOpen(!open)} className="mt-1 text-xs font-semibold underline underline-offset-4">
+          {open ? "Mostrar menos" : "Mostrar más"}
+        </button>
+      )}
+    </div>
+  );
+}
+
 function GuestRow({
   label, hint, value, onChange, min = 0,
 }: {
