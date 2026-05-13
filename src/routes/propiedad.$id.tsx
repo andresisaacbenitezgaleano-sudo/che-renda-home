@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Share, Heart, Star, Award, Grid3x3, ChevronDown,
   Users, Minus, Plus, CalendarDays,
@@ -24,8 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
-import { AuthProvider } from "@/components/site/AuthContext";
-import { AuthModal } from "@/components/site/AuthModal";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 import p1 from "@/assets/prop-1.jpg";
@@ -213,6 +213,7 @@ function DateButton({
 }
 
 function PropertyDetail() {
+  const { id } = Route.useParams();
   const [fav, setFav] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [modality, setModality] = useState<"Por Noche" | "Por Fin de Semana Completo">("Por Noche");
@@ -222,28 +223,49 @@ function PropertyDetail() {
   const [availRange, setAvailRange] = useState<DateRange | undefined>();
   const [showAllReviews, setShowAllReviews] = useState(false);
 
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+  const { data: property } = useQuery({
+    queryKey: ["property", id],
+    enabled: isUuid,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("properties")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      return data;
+    },
+  });
+
   const nights =
     availRange?.from && availRange?.to
       ? Math.max(0, differenceInCalendarDays(availRange.to, availRange.from))
       : 0;
 
-  const basePrice = modality === "Por Noche" ? 180 : 420;
+  const basePrice = property
+    ? Number(property.price)
+    : modality === "Por Noche" ? 180 : 420;
   const totalGuests = guests.adultos + guests.ninos;
   const guestLabel = `${totalGuests} huésped${totalGuests !== 1 ? "es" : ""}${
     guests.mascotas ? `, ${guests.mascotas} mascota${guests.mascotas > 1 ? "s" : ""}` : ""
   }`;
 
+  const displayTitle = property?.title ?? "Quinta Vacacional San Ber";
+  const displayLocation = property
+    ? [property.city, property.department].filter(Boolean).join(", ") || "Paraguay"
+    : "San Bernardino, Paraguay";
+  const displayDescription = property?.description ?? DESCRIPTION;
+
   return (
-    <AuthProvider>
       <div className="min-h-screen bg-background">
         <Navbar />
-        <AuthModal />
 
         <main className="mx-auto max-w-7xl px-4 pb-16 pt-24 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
             <h1 className="font-display text-2xl font-bold sm:text-3xl">
-              Quinta Vacacional San Ber
+              {displayTitle}
             </h1>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" className="gap-2">
@@ -276,7 +298,7 @@ function PropertyDetail() {
             <div className="space-y-8 lg:col-span-2">
               <div className="border-b border-border pb-6">
                 <h2 className="font-display text-xl font-bold">
-                  Quinta entera en San Bernardino, Paraguay
+                  {displayTitle} en {displayLocation}
                 </h2>
                 <p className="mt-1 text-muted-foreground">
                   10 huéspedes máx. · 4 habitaciones · 6 camas · 3 baños
@@ -322,7 +344,7 @@ function PropertyDetail() {
                     !expanded && "line-clamp-4",
                   )}
                 >
-                  {DESCRIPTION}
+                  {displayDescription}
                 </p>
                 <button
                   onClick={() => setExpanded(!expanded)}
@@ -515,6 +537,5 @@ function PropertyDetail() {
 
         <Footer />
       </div>
-    </AuthProvider>
   );
 }

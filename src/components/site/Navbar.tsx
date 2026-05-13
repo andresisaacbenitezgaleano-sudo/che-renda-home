@@ -44,7 +44,7 @@ export function Navbar({ onReset }: NavbarProps) {
     isAuthenticated,
     userInitial,
     openAuthModal,
-    logout,
+    signOut,
     lang,
     setLang,
     darkMode,
@@ -152,7 +152,7 @@ export function Navbar({ onReset }: NavbarProps) {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                logout();
+                signOut();
                 setConfirmLogout(false);
               }}
               className="bg-primary text-primary-foreground hover:bg-primary/90"

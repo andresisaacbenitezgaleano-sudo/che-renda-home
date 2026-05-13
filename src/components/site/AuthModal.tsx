@@ -5,23 +5,84 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
 
 export function AuthModal() {
-  const { authModalOpen, closeAuthModal, login } = useAuth();
-  const [identifier, setIdentifier] = useState("");
+  const { authModalOpen, closeAuthModal } = useAuth();
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  const canContinue =
-    acceptPrivacy && acceptTerms && identifier.trim().length > 2;
+  const validEmail = /^\S+@\S+\.\S+$/.test(email.trim());
+  const canSignIn = validEmail && password.length >= 6;
+  const canSignUp =
+    canSignIn && acceptPrivacy && acceptTerms && fullName.trim().length > 1;
 
-  const handleContinue = () => {
-    if (!canContinue) return;
-    login(identifier);
-    setIdentifier("");
+  const reset = () => {
+    setEmail("");
+    setPassword("");
+    setFullName("");
     setAcceptPrivacy(false);
     setAcceptTerms(false);
+  };
+
+  const handleSignIn = async () => {
+    if (!canSignIn) return;
+    setBusy(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("¡Bienvenido!");
+    reset();
+    closeAuthModal();
+  };
+
+  const handleSignUp = async () => {
+    if (!canSignUp) return;
+    setBusy(true);
+    const redirect = `${window.location.origin}/`;
+    const { error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        emailRedirectTo: redirect,
+        data: {
+          full_name: fullName.trim(),
+          accepted_privacy: true,
+          accepted_terms: true,
+        },
+      },
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Cuenta creada. Revisá tu correo para confirmar.");
+    reset();
+    closeAuthModal();
+  };
+
+  const handleGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/` },
+    });
+    if (error) toast.error(error.message);
   };
 
   return (
@@ -47,71 +108,111 @@ export function AuthModal() {
           </p>
         </div>
 
-        <div className="space-y-4 px-6 py-5">
-          <div className="space-y-1.5">
-            <label htmlFor="auth-id" className="text-xs font-semibold text-foreground">
-              Teléfono o correo electrónico
-            </label>
-            <Input
-              id="auth-id"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="+54 11 1234 5678  ó  vos@email.com"
-              className="h-11 rounded-xl"
-            />
-          </div>
+        <div className="px-6 py-5">
+          <Tabs value={mode} onValueChange={(v) => setMode(v as typeof mode)}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signin">Iniciar sesión</TabsTrigger>
+              <TabsTrigger value="signup">Crear cuenta</TabsTrigger>
+            </TabsList>
 
-          <div className="space-y-3 rounded-xl bg-muted/40 p-3">
-            <label className="flex items-start gap-3 text-xs leading-snug text-foreground">
-              <Checkbox
-                checked={acceptPrivacy}
-                onCheckedChange={(v) => setAcceptPrivacy(v === true)}
-                className="mt-0.5"
+            <TabsContent value="signin" className="mt-4 space-y-4">
+              <Input
+                type="email"
+                placeholder="vos@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-11 rounded-xl"
               />
-              <span>
-                Acepto de forma expresa e informada que Che Renda T&T trate mis
-                datos personales según la{" "}
-                <a
-                  href="/privacidad"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-semibold text-primary underline-offset-2 hover:underline"
-                >
-                  Política de Privacidad
-                </a>
-                .
-              </span>
-            </label>
-            <label className="flex items-start gap-3 text-xs leading-snug text-foreground">
-              <Checkbox
-                checked={acceptTerms}
-                onCheckedChange={(v) => setAcceptTerms(v === true)}
-                className="mt-0.5"
+              <Input
+                type="password"
+                placeholder="Contraseña"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-11 rounded-xl"
               />
-              <span>
-                He leído y acepto los{" "}
-                <a
-                  href="/terminos"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-semibold text-primary underline-offset-2 hover:underline"
-                >
-                  Términos y Condiciones
-                </a>{" "}
-                de Uso de Che Renda T&T.
-              </span>
-            </label>
-          </div>
+              <Button
+                disabled={!canSignIn || busy}
+                onClick={handleSignIn}
+                className="h-11 w-full rounded-xl bg-primary text-base font-semibold text-primary-foreground shadow-md hover:bg-primary/90 disabled:opacity-50"
+              >
+                Continuar
+              </Button>
+            </TabsContent>
 
-          <Button
-            disabled={!canContinue}
-            onClick={handleContinue}
-            className="h-11 w-full rounded-xl bg-primary text-base font-semibold text-primary-foreground shadow-md hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Continuar
-          </Button>
+            <TabsContent value="signup" className="mt-4 space-y-4">
+              <Input
+                placeholder="Nombre completo"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="h-11 rounded-xl"
+              />
+              <Input
+                type="email"
+                placeholder="vos@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-11 rounded-xl"
+              />
+              <Input
+                type="password"
+                placeholder="Contraseña (mín. 6 caracteres)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-11 rounded-xl"
+              />
 
-          <div className="flex items-center gap-3">
+              <div className="space-y-3 rounded-xl bg-muted/40 p-3">
+                <label className="flex items-start gap-3 text-xs leading-snug text-foreground">
+                  <Checkbox
+                    checked={acceptPrivacy}
+                    onCheckedChange={(v) => setAcceptPrivacy(v === true)}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    Acepto que Che Renda T&T trate mis datos según la{" "}
+                    <a
+                      href="/privacidad"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-primary underline-offset-2 hover:underline"
+                    >
+                      Política de Privacidad
+                    </a>
+                    .
+                  </span>
+                </label>
+                <label className="flex items-start gap-3 text-xs leading-snug text-foreground">
+                  <Checkbox
+                    checked={acceptTerms}
+                    onCheckedChange={(v) => setAcceptTerms(v === true)}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    He leído y acepto los{" "}
+                    <a
+                      href="/terminos"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-primary underline-offset-2 hover:underline"
+                    >
+                      Términos y Condiciones
+                    </a>{" "}
+                    de Che Renda T&T.
+                  </span>
+                </label>
+              </div>
+
+              <Button
+                disabled={!canSignUp || busy}
+                onClick={handleSignUp}
+                className="h-11 w-full rounded-xl bg-primary text-base font-semibold text-primary-foreground shadow-md hover:bg-primary/90 disabled:opacity-50"
+              >
+                Crear cuenta
+              </Button>
+            </TabsContent>
+          </Tabs>
+
+          <div className="my-4 flex items-center gap-3">
             <Separator className="flex-1" />
             <span className="text-xs text-muted-foreground">o</span>
             <Separator className="flex-1" />
@@ -120,7 +221,7 @@ export function AuthModal() {
           <Button
             variant="outline"
             className="h-11 w-full gap-3 rounded-xl border-border/70 text-sm font-semibold"
-            onClick={() => login("Google")}
+            onClick={handleGoogle}
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
