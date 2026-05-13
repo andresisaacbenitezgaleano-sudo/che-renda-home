@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Heart, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +15,7 @@ export interface Property {
 export function PropertyCard({ property }: { property: Property }) {
   const [fav, setFav] = useState(false);
   return (
-    <article className="group cursor-pointer">
+    <Link to="/propiedad/$id" params={{ id: property.id }} className="group block cursor-pointer">
       <div className="relative overflow-hidden rounded-2xl bg-muted shadow-[var(--shadow-card)]">
         <img
           src={property.image}
@@ -56,6 +57,6 @@ export function PropertyCard({ property }: { property: Property }) {
           <span className="text-muted-foreground">/ noche</span>
         </p>
       </div>
-    </article>
+    </Link>
   );
 }
