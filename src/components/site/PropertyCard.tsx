@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Heart, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
