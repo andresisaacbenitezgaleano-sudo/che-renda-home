@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Minus, Plus, Check } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/site/AuthContext";
 
 export const Route = createFileRoute("/publicar")({
   head: () => ({ meta: [{ title: "Publicar anuncio — Che Renda T&T" }] }),
@@ -69,8 +71,10 @@ const CONFORT = [
 ];
 
 function PublicarPage() {
+  const { user, openAuthModal } = useAuth();
+  const navigate = useNavigate();
   const [step, setStep] = useState(0);
-
+  const [busy, setBusy] = useState(false);
   // Paso 1
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -105,13 +109,42 @@ function PublicarPage() {
   const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
   const prev = () => setStep((s) => Math.max(s - 1, 0));
 
-  const submit = () => {
-    if (!precio || !modalidad) {
-      toast.error("Completá precio y modalidad");
+  const submit = async () => {
+    if (!user) {
+      openAuthModal();
+      return;
+    }
+    if (!titulo.trim() || !tipo || !precio || !modalidad) {
+      toast.error("Completá todos los campos obligatorios");
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase.from("properties").insert({
+      host_id: user.id,
+      title: titulo.trim(),
+      description: descripcion.trim() || null,
+      property_type: tipo,
+      department: departamento || null,
+      city: ciudad || null,
+      address: direccion || null,
+      guests: counts.huespedes,
+      rooms_ac: counts.habAire,
+      rooms_no_ac: counts.habSinAire,
+      beds: counts.camas,
+      bathrooms: counts.banos,
+      amenities: servicios,
+      pets_allowed: mascotas,
+      price: Number(precio),
+      price_modality: modalidad === "noche" ? "per_night" : "full_weekend",
+      status: "active",
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
       return;
     }
     toast.success("¡Anuncio publicado correctamente!");
-    setStep(0);
+    navigate({ to: "/mis-propiedades" });
   };
 
   return (
