@@ -57,6 +57,6 @@ export function PropertyCard({ property }: { property: Property }) {
           <span className="text-muted-foreground">/ noche</span>
         </p>
       </div>
-    </article>
+    </Link>
   );
 }
