@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TeEscuchamosRouteImport } from './routes/te-escuchamos'
+import { Route as PublicarRouteImport } from './routes/publicar'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as MensajesRouteImport } from './routes/mensajes'
 import { Route as HistorialRouteImport } from './routes/historial'
@@ -19,6 +20,11 @@ import { Route as PropiedadIdRouteImport } from './routes/propiedad.$id'
 const TeEscuchamosRoute = TeEscuchamosRouteImport.update({
   id: '/te-escuchamos',
   path: '/te-escuchamos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicarRoute = PublicarRouteImport.update({
+  id: '/publicar',
+  path: '/publicar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerfilRoute = PerfilRouteImport.update({
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/historial': typeof HistorialRoute
   '/mensajes': typeof MensajesRoute
   '/perfil': typeof PerfilRoute
+  '/publicar': typeof PublicarRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/historial': typeof HistorialRoute
   '/mensajes': typeof MensajesRoute
   '/perfil': typeof PerfilRoute
+  '/publicar': typeof PublicarRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/historial': typeof HistorialRoute
   '/mensajes': typeof MensajesRoute
   '/perfil': typeof PerfilRoute
+  '/publicar': typeof PublicarRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/historial'
     | '/mensajes'
     | '/perfil'
+    | '/publicar'
     | '/te-escuchamos'
     | '/propiedad/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/historial'
     | '/mensajes'
     | '/perfil'
+    | '/publicar'
     | '/te-escuchamos'
     | '/propiedad/$id'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/historial'
     | '/mensajes'
     | '/perfil'
+    | '/publicar'
     | '/te-escuchamos'
     | '/propiedad/$id'
   fileRoutesById: FileRoutesById
@@ -104,6 +116,7 @@ export interface RootRouteChildren {
   HistorialRoute: typeof HistorialRoute
   MensajesRoute: typeof MensajesRoute
   PerfilRoute: typeof PerfilRoute
+  PublicarRoute: typeof PublicarRoute
   TeEscuchamosRoute: typeof TeEscuchamosRoute
   PropiedadIdRoute: typeof PropiedadIdRoute
 }
@@ -115,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/te-escuchamos'
       fullPath: '/te-escuchamos'
       preLoaderRoute: typeof TeEscuchamosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/publicar': {
+      id: '/publicar'
+      path: '/publicar'
+      fullPath: '/publicar'
+      preLoaderRoute: typeof PublicarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/perfil': {
@@ -160,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistorialRoute: HistorialRoute,
   MensajesRoute: MensajesRoute,
   PerfilRoute: PerfilRoute,
+  PublicarRoute: PublicarRoute,
   TeEscuchamosRoute: TeEscuchamosRoute,
   PropiedadIdRoute: PropiedadIdRoute,
 }
