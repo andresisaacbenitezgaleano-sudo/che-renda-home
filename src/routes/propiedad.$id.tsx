@@ -331,6 +331,104 @@ function PropertyDetail() {
                   {expanded ? "Mostrar menos" : "Mostrar más"}
                 </button>
               </div>
+
+              {/* What this place offers */}
+              <div className="border-t border-border pt-8">
+                <h3 className="mb-4 font-display text-xl font-bold">¿Qué ofrece este lugar?</h3>
+                <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {QUICK_AMENITIES.map(({ icon: Icon, label }) => (
+                    <li key={label} className="flex items-center gap-3 text-sm">
+                      <Icon className="h-5 w-5 text-foreground" />
+                      <span>{label}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="secondary" className="mt-5 rounded-xl">
+                      Mostrar los servicios
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="font-display text-2xl">Lo que ofrece este lugar</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-6 pt-2">
+                      {AMENITY_GROUPS.map((g) => (
+                        <div key={g.title}>
+                          <h4 className="mb-3 text-base font-bold">{g.title}</h4>
+                          <ul className="divide-y divide-border">
+                            {g.items.map((it) => (
+                              <li key={it.label} className="flex items-center gap-3 py-3 text-sm">
+                                <it.icon className="h-5 w-5 shrink-0 text-foreground" />
+                                <span>{it.label}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {/* Availability calendar */}
+              <div className="border-t border-border pt-8">
+                <div className="mb-4 flex items-end justify-between gap-2">
+                  <div>
+                    <h3 className="font-display text-xl font-bold">
+                      {nights > 0 ? `${nights} noche${nights > 1 ? "s" : ""} en Asunción` : "Elegí tus fechas"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {availRange?.from && availRange?.to
+                        ? `${format(availRange.from, "d MMM", { locale: es })} – ${format(availRange.to, "d MMM yyyy", { locale: es })}`
+                        : "Disponibilidad en tiempo real"}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setAvailRange(undefined)}
+                    className="text-sm font-semibold underline underline-offset-4"
+                  >
+                    Borrar fechas
+                  </button>
+                </div>
+                <div className="rounded-2xl border border-border p-2">
+                  <Calendar
+                    mode="range"
+                    numberOfMonths={typeof window !== "undefined" && window.innerWidth >= 768 ? 2 : 1}
+                    selected={availRange}
+                    onSelect={setAvailRange}
+                    locale={es}
+                    className={cn("p-3 pointer-events-auto [&_[data-selected=true]]:bg-foreground [&_[data-selected=true]]:text-background")}
+                  />
+                </div>
+              </div>
+
+              {/* Reviews */}
+              <div className="border-t border-border pt-8">
+                <div className="mb-5 flex items-center gap-2">
+                  <Star className="h-5 w-5 fill-current" />
+                  <h3 className="font-display text-xl font-bold">5.0 · {REVIEWS.length * 16} evaluaciones</h3>
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {REVIEWS.slice(0, 6).map((r, i) => <ReviewCard key={i} r={r} />)}
+                </div>
+                <Dialog open={showAllReviews} onOpenChange={setShowAllReviews}>
+                  <DialogTrigger asChild>
+                    <Button variant="secondary" className="mt-6 rounded-xl">
+                      Mostrar todo: evaluaciones
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="font-display text-2xl">Todas las evaluaciones</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid grid-cols-1 gap-4 pt-2">
+                      {REVIEWS.map((r, i) => <ReviewCard key={i} r={r} />)}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
 
             {/* Right — Sticky reservation */}
