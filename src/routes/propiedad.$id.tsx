@@ -298,7 +298,7 @@ function PropertyDetail() {
             <div className="space-y-8 lg:col-span-2">
               <div className="border-b border-border pb-6">
                 <h2 className="font-display text-xl font-bold">
-                  Quinta entera en San Bernardino, Paraguay
+                  {displayTitle} en {displayLocation}
                 </h2>
                 <p className="mt-1 text-muted-foreground">
                   10 huéspedes máx. · 4 habitaciones · 6 camas · 3 baños
@@ -344,7 +344,7 @@ function PropertyDetail() {
                     !expanded && "line-clamp-4",
                   )}
                 >
-                  {DESCRIPTION}
+                  {displayDescription}
                 </p>
                 <button
                   onClick={() => setExpanded(!expanded)}
@@ -537,6 +537,5 @@ function PropertyDetail() {
 
         <Footer />
       </div>
-    </AuthProvider>
   );
 }
