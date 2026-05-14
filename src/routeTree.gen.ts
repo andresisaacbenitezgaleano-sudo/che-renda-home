@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TerminosYCondicionesRouteImport } from './routes/terminos-y-condiciones'
 import { Route as TeEscuchamosRouteImport } from './routes/te-escuchamos'
 import { Route as PublicarRouteImport } from './routes/publicar'
 import { Route as PerfilRouteImport } from './routes/perfil'
@@ -18,6 +19,11 @@ import { Route as HistorialRouteImport } from './routes/historial'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropiedadIdRouteImport } from './routes/propiedad.$id'
 
+const TerminosYCondicionesRoute = TerminosYCondicionesRouteImport.update({
+  id: '/terminos-y-condiciones',
+  path: '/terminos-y-condiciones',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TeEscuchamosRoute = TeEscuchamosRouteImport.update({
   id: '/te-escuchamos',
   path: '/te-escuchamos',
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/publicar': typeof PublicarRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
+  '/terminos-y-condiciones': typeof TerminosYCondicionesRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRoutesByTo {
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/publicar': typeof PublicarRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
+  '/terminos-y-condiciones': typeof TerminosYCondicionesRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRoutesById {
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/publicar': typeof PublicarRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
+  '/terminos-y-condiciones': typeof TerminosYCondicionesRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/publicar'
     | '/te-escuchamos'
+    | '/terminos-y-condiciones'
     | '/propiedad/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/publicar'
     | '/te-escuchamos'
+    | '/terminos-y-condiciones'
     | '/propiedad/$id'
   id:
     | '__root__'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/publicar'
     | '/te-escuchamos'
+    | '/terminos-y-condiciones'
     | '/propiedad/$id'
   fileRoutesById: FileRoutesById
 }
@@ -131,11 +143,19 @@ export interface RootRouteChildren {
   PerfilRoute: typeof PerfilRoute
   PublicarRoute: typeof PublicarRoute
   TeEscuchamosRoute: typeof TeEscuchamosRoute
+  TerminosYCondicionesRoute: typeof TerminosYCondicionesRoute
   PropiedadIdRoute: typeof PropiedadIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terminos-y-condiciones': {
+      id: '/terminos-y-condiciones'
+      path: '/terminos-y-condiciones'
+      fullPath: '/terminos-y-condiciones'
+      preLoaderRoute: typeof TerminosYCondicionesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/te-escuchamos': {
       id: '/te-escuchamos'
       path: '/te-escuchamos'
@@ -203,8 +223,19 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilRoute: PerfilRoute,
   PublicarRoute: PublicarRoute,
   TeEscuchamosRoute: TeEscuchamosRoute,
+  TerminosYCondicionesRoute: TerminosYCondicionesRoute,
   PropiedadIdRoute: PropiedadIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
