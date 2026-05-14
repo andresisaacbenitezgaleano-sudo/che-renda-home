@@ -278,7 +278,13 @@ export type Database = {
     Enums: {
       booking_status: "pending" | "confirmed" | "cancelled" | "completed"
       pqrs_type: "peticion" | "queja" | "reclamo" | "sugerencia"
-      price_modality: "per_night" | "full_weekend"
+      price_modality:
+        | "per_hour"
+        | "per_night"
+        | "per_week"
+        | "per_month"
+        | "annual"
+        | "full_weekend"
       property_status: "active" | "paused" | "draft"
     }
     CompositeTypes: {
@@ -409,7 +415,14 @@ export const Constants = {
     Enums: {
       booking_status: ["pending", "confirmed", "cancelled", "completed"],
       pqrs_type: ["peticion", "queja", "reclamo", "sugerencia"],
-      price_modality: ["per_night", "full_weekend"],
+      price_modality: [
+        "per_hour",
+        "per_night",
+        "per_week",
+        "per_month",
+        "annual",
+        "full_weekend",
+      ],
       property_status: ["active", "paused", "draft"],
     },
   },

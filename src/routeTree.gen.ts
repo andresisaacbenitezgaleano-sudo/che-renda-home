@@ -9,8 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TerminosYCondicionesRouteImport } from './routes/terminos-y-condiciones'
 import { Route as TeEscuchamosRouteImport } from './routes/te-escuchamos'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PublicarRouteImport } from './routes/publicar'
+import { Route as PoliticaDePrivacidadRouteImport } from './routes/politica-de-privacidad'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as MisPropiedadesRouteImport } from './routes/mis-propiedades'
 import { Route as MensajesRouteImport } from './routes/mensajes'
@@ -18,14 +21,29 @@ import { Route as HistorialRouteImport } from './routes/historial'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropiedadIdRouteImport } from './routes/propiedad.$id'
 
+const TerminosYCondicionesRoute = TerminosYCondicionesRouteImport.update({
+  id: '/terminos-y-condiciones',
+  path: '/terminos-y-condiciones',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TeEscuchamosRoute = TeEscuchamosRouteImport.update({
   id: '/te-escuchamos',
   path: '/te-escuchamos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PublicarRoute = PublicarRouteImport.update({
   id: '/publicar',
   path: '/publicar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoliticaDePrivacidadRoute = PoliticaDePrivacidadRouteImport.update({
+  id: '/politica-de-privacidad',
+  path: '/politica-de-privacidad',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerfilRoute = PerfilRouteImport.update({
@@ -65,8 +83,11 @@ export interface FileRoutesByFullPath {
   '/mensajes': typeof MensajesRoute
   '/mis-propiedades': typeof MisPropiedadesRoute
   '/perfil': typeof PerfilRoute
+  '/politica-de-privacidad': typeof PoliticaDePrivacidadRoute
   '/publicar': typeof PublicarRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
+  '/terminos-y-condiciones': typeof TerminosYCondicionesRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRoutesByTo {
@@ -75,8 +96,11 @@ export interface FileRoutesByTo {
   '/mensajes': typeof MensajesRoute
   '/mis-propiedades': typeof MisPropiedadesRoute
   '/perfil': typeof PerfilRoute
+  '/politica-de-privacidad': typeof PoliticaDePrivacidadRoute
   '/publicar': typeof PublicarRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
+  '/terminos-y-condiciones': typeof TerminosYCondicionesRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRoutesById {
@@ -86,8 +110,11 @@ export interface FileRoutesById {
   '/mensajes': typeof MensajesRoute
   '/mis-propiedades': typeof MisPropiedadesRoute
   '/perfil': typeof PerfilRoute
+  '/politica-de-privacidad': typeof PoliticaDePrivacidadRoute
   '/publicar': typeof PublicarRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
+  '/terminos-y-condiciones': typeof TerminosYCondicionesRoute
   '/propiedad/$id': typeof PropiedadIdRoute
 }
 export interface FileRouteTypes {
@@ -98,8 +125,11 @@ export interface FileRouteTypes {
     | '/mensajes'
     | '/mis-propiedades'
     | '/perfil'
+    | '/politica-de-privacidad'
     | '/publicar'
+    | '/reset-password'
     | '/te-escuchamos'
+    | '/terminos-y-condiciones'
     | '/propiedad/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -108,8 +138,11 @@ export interface FileRouteTypes {
     | '/mensajes'
     | '/mis-propiedades'
     | '/perfil'
+    | '/politica-de-privacidad'
     | '/publicar'
+    | '/reset-password'
     | '/te-escuchamos'
+    | '/terminos-y-condiciones'
     | '/propiedad/$id'
   id:
     | '__root__'
@@ -118,8 +151,11 @@ export interface FileRouteTypes {
     | '/mensajes'
     | '/mis-propiedades'
     | '/perfil'
+    | '/politica-de-privacidad'
     | '/publicar'
+    | '/reset-password'
     | '/te-escuchamos'
+    | '/terminos-y-condiciones'
     | '/propiedad/$id'
   fileRoutesById: FileRoutesById
 }
@@ -129,13 +165,23 @@ export interface RootRouteChildren {
   MensajesRoute: typeof MensajesRoute
   MisPropiedadesRoute: typeof MisPropiedadesRoute
   PerfilRoute: typeof PerfilRoute
+  PoliticaDePrivacidadRoute: typeof PoliticaDePrivacidadRoute
   PublicarRoute: typeof PublicarRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   TeEscuchamosRoute: typeof TeEscuchamosRoute
+  TerminosYCondicionesRoute: typeof TerminosYCondicionesRoute
   PropiedadIdRoute: typeof PropiedadIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terminos-y-condiciones': {
+      id: '/terminos-y-condiciones'
+      path: '/terminos-y-condiciones'
+      fullPath: '/terminos-y-condiciones'
+      preLoaderRoute: typeof TerminosYCondicionesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/te-escuchamos': {
       id: '/te-escuchamos'
       path: '/te-escuchamos'
@@ -143,11 +189,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeEscuchamosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/publicar': {
       id: '/publicar'
       path: '/publicar'
       fullPath: '/publicar'
       preLoaderRoute: typeof PublicarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/politica-de-privacidad': {
+      id: '/politica-de-privacidad'
+      path: '/politica-de-privacidad'
+      fullPath: '/politica-de-privacidad'
+      preLoaderRoute: typeof PoliticaDePrivacidadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/perfil': {
@@ -201,8 +261,11 @@ const rootRouteChildren: RootRouteChildren = {
   MensajesRoute: MensajesRoute,
   MisPropiedadesRoute: MisPropiedadesRoute,
   PerfilRoute: PerfilRoute,
+  PoliticaDePrivacidadRoute: PoliticaDePrivacidadRoute,
   PublicarRoute: PublicarRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   TeEscuchamosRoute: TeEscuchamosRoute,
+  TerminosYCondicionesRoute: TerminosYCondicionesRoute,
   PropiedadIdRoute: PropiedadIdRoute,
 }
 export const routeTree = rootRouteImport

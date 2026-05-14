@@ -1,14 +1,40 @@
 import type { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
-import { User, History, Settings, MessageSquare, Megaphone, Home as HomeIcon } from "lucide-react";
+import { Link, useNavigate, useRouter } from "@tanstack/react-router";
+import { ArrowLeft, User, History, Settings, MessageSquare, Megaphone, Home as HomeIcon } from "lucide-react";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
+import { Button } from "@/components/ui/button";
 
-export function SiteShell({ children }: { children: ReactNode }) {
+export function SiteShell({ children, hideBack = false }: { children: ReactNode; hideBack?: boolean }) {
+  const navigate = useNavigate();
+  const router = useRouter();
+  const showBack = !hideBack && router.state.location.pathname !== "/";
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">{children}</main>
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+        {showBack && (
+          <div className="mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                if (typeof window !== "undefined" && window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  navigate({ to: "/" });
+                }
+              }}
+              className="gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver atrás
+            </Button>
+          </div>
+        )}
+        {children}
+      </main>
       <Footer />
     </div>
   );
@@ -18,7 +44,6 @@ const NAV = [
   { to: "/perfil", label: "Sobre mí", icon: User },
   { to: "/historial", label: "Historial", icon: History },
   { to: "/mensajes", label: "Mensajes", icon: MessageSquare },
-  { to: "/configuracion", label: "Configuración", icon: Settings },
   { to: "/te-escuchamos", label: "Te escuchamos", icon: Megaphone },
   { to: "/", label: "Inicio", icon: HomeIcon },
 ] as const;
