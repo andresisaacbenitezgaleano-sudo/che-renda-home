@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TerminosYCondicionesRouteImport } from './routes/terminos-y-condiciones'
 import { Route as TeEscuchamosRouteImport } from './routes/te-escuchamos'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PublicarRouteImport } from './routes/publicar'
 import { Route as PoliticaDePrivacidadRouteImport } from './routes/politica-de-privacidad'
 import { Route as PerfilRouteImport } from './routes/perfil'
@@ -28,6 +29,11 @@ const TerminosYCondicionesRoute = TerminosYCondicionesRouteImport.update({
 const TeEscuchamosRoute = TeEscuchamosRouteImport.update({
   id: '/te-escuchamos',
   path: '/te-escuchamos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PublicarRoute = PublicarRouteImport.update({
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/politica-de-privacidad': typeof PoliticaDePrivacidadRoute
   '/publicar': typeof PublicarRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
   '/terminos-y-condiciones': typeof TerminosYCondicionesRoute
   '/propiedad/$id': typeof PropiedadIdRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/politica-de-privacidad': typeof PoliticaDePrivacidadRoute
   '/publicar': typeof PublicarRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
   '/terminos-y-condiciones': typeof TerminosYCondicionesRoute
   '/propiedad/$id': typeof PropiedadIdRoute
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/politica-de-privacidad': typeof PoliticaDePrivacidadRoute
   '/publicar': typeof PublicarRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
   '/terminos-y-condiciones': typeof TerminosYCondicionesRoute
   '/propiedad/$id': typeof PropiedadIdRoute
@@ -118,6 +127,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/politica-de-privacidad'
     | '/publicar'
+    | '/reset-password'
     | '/te-escuchamos'
     | '/terminos-y-condiciones'
     | '/propiedad/$id'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/politica-de-privacidad'
     | '/publicar'
+    | '/reset-password'
     | '/te-escuchamos'
     | '/terminos-y-condiciones'
     | '/propiedad/$id'
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/politica-de-privacidad'
     | '/publicar'
+    | '/reset-password'
     | '/te-escuchamos'
     | '/terminos-y-condiciones'
     | '/propiedad/$id'
@@ -155,6 +167,7 @@ export interface RootRouteChildren {
   PerfilRoute: typeof PerfilRoute
   PoliticaDePrivacidadRoute: typeof PoliticaDePrivacidadRoute
   PublicarRoute: typeof PublicarRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   TeEscuchamosRoute: typeof TeEscuchamosRoute
   TerminosYCondicionesRoute: typeof TerminosYCondicionesRoute
   PropiedadIdRoute: typeof PropiedadIdRoute
@@ -174,6 +187,13 @@ declare module '@tanstack/react-router' {
       path: '/te-escuchamos'
       fullPath: '/te-escuchamos'
       preLoaderRoute: typeof TeEscuchamosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/publicar': {
@@ -243,6 +263,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilRoute: PerfilRoute,
   PoliticaDePrivacidadRoute: PoliticaDePrivacidadRoute,
   PublicarRoute: PublicarRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   TeEscuchamosRoute: TeEscuchamosRoute,
   TerminosYCondicionesRoute: TerminosYCondicionesRoute,
   PropiedadIdRoute: PropiedadIdRoute,
