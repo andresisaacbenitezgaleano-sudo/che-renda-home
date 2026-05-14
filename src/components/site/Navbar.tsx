@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import {
   Menu,
   Plane,
@@ -11,7 +12,6 @@ import {
   History,
   MessageSquare,
   UserCircle,
-  Settings,
   Megaphone,
   Moon,
   ChevronLeft,
@@ -67,8 +67,9 @@ export function Navbar({ onReset }: NavbarProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <button
-          onClick={onReset}
+        <Link
+          to="/"
+          onClick={() => onReset?.()}
           className="group flex items-center gap-2 transition-opacity hover:opacity-80"
           aria-label="Inicio Che Renda T&T"
         >
@@ -83,7 +84,7 @@ export function Navbar({ onReset }: NavbarProps) {
               Tour & Travel
             </span>
           </span>
-        </button>
+        </Link>
 
         <Popover
           open={open}
@@ -166,32 +167,47 @@ export function Navbar({ onReset }: NavbarProps) {
   );
 }
 
-function MenuItem({
+function MenuLink({
+  icon: Icon,
+  label,
+  to,
+  onClick,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  to: string;
+  onClick?: () => void;
+}) {
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-accent"
+    >
+      <Icon className="h-4 w-4 text-muted-foreground" />
+      {label}
+    </Link>
+  );
+}
+
+function MenuButton({
   icon: Icon,
   label,
   onClick,
-  to,
   highlight,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   onClick?: () => void;
-  to?: string;
   highlight?: boolean;
 }) {
-  const cls = `flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium transition-colors hover:bg-accent ${
-    highlight ? "text-destructive" : "text-foreground"
-  }`;
-  if (to) {
-    return (
-      <a href={to} className={cls} onClick={onClick}>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-        {label}
-      </a>
-    );
-  }
   return (
-    <button onClick={onClick} className={cls}>
+    <button
+      onClick={onClick}
+      className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium transition-colors hover:bg-accent ${
+        highlight ? "text-destructive" : "text-foreground"
+      }`}
+    >
       <Icon className="h-4 w-4 text-muted-foreground" />
       {label}
     </button>
@@ -209,17 +225,9 @@ function GuestMenu({
 }) {
   return (
     <div className="py-2">
-      <MenuItem icon={Globe} label="Idioma y modo oscuro" onClick={onLangs} />
-      <MenuItem
-        icon={HelpCircle}
-        label="Centro de ayuda"
-        onClick={onClose}
-      />
-      <MenuItem
-        icon={Home}
-        label="Publicá en Che Renda"
-        onClick={onAuth}
-      />
+      <MenuButton icon={Globe} label="Idioma y modo oscuro" onClick={onLangs} />
+      <MenuButton icon={HelpCircle} label="Centro de ayuda" onClick={onClose} />
+      <MenuButton icon={Home} label="Publicá en Che Renda" onClick={onAuth} />
       <div className="mt-2 border-t border-border/60 px-3 pb-3 pt-3">
         <Button
           onClick={onAuth}
@@ -243,17 +251,16 @@ function AuthedMenu({
 }) {
   return (
     <div className="py-2">
-      <MenuItem icon={Home} label="Publicar Che Renda" to="/publicar" onClick={onNavigate} />
-      <MenuItem icon={FileText} label="Mis Publicaciones" to="/mis-propiedades" onClick={onNavigate} />
-      <MenuItem icon={History} label="Historial" to="/historial" onClick={onNavigate} />
-      <MenuItem icon={MessageSquare} label="Mensajes internos" to="/mensajes" onClick={onNavigate} />
-      <MenuItem icon={UserCircle} label="Perfil" to="/perfil" onClick={onNavigate} />
-      <MenuItem icon={Settings} label="Configuración de la cuenta" to="/configuracion" onClick={onNavigate} />
+      <MenuLink icon={Home} label="Publicar Che Renda" to="/publicar" onClick={onNavigate} />
+      <MenuLink icon={FileText} label="Mis Publicaciones" to="/mis-propiedades" onClick={onNavigate} />
+      <MenuLink icon={History} label="Historial" to="/historial" onClick={onNavigate} />
+      <MenuLink icon={MessageSquare} label="Mensajes internos" to="/mensajes" onClick={onNavigate} />
+      <MenuLink icon={UserCircle} label="Perfil" to="/perfil" onClick={onNavigate} />
       <div className="my-1 border-t border-border/60" />
-      <MenuItem icon={Globe} label="Idioma y modo oscuro" onClick={onLangs} />
-      <MenuItem icon={Megaphone} label="Te escuchamos" to="/te-escuchamos" onClick={onNavigate} />
+      <MenuButton icon={Globe} label="Idioma y modo oscuro" onClick={onLangs} />
+      <MenuLink icon={Megaphone} label="Te escuchamos" to="/te-escuchamos" onClick={onNavigate} />
       <div className="my-1 border-t border-border/60" />
-      <MenuItem icon={LogOut} label="Cerrar sesión" onClick={onLogout} highlight />
+      <MenuButton icon={LogOut} label="Cerrar sesión" onClick={onLogout} highlight />
     </div>
   );
 }
