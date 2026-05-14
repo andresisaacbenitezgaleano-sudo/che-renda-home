@@ -21,7 +21,6 @@ export function SiteShell({ children, hideBack = false }: { children: ReactNode;
               size="sm"
               onClick={() => {
                 if (typeof window !== "undefined" && window.history.length > 1) {
-                  navigate({ to: ".." as any });
                   window.history.back();
                 } else {
                   navigate({ to: "/" });
