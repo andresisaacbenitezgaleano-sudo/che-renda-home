@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TerminosYCondicionesRouteImport } from './routes/terminos-y-condiciones'
 import { Route as TeEscuchamosRouteImport } from './routes/te-escuchamos'
 import { Route as PublicarRouteImport } from './routes/publicar'
+import { Route as PoliticaDePrivacidadRouteImport } from './routes/politica-de-privacidad'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as MisPropiedadesRouteImport } from './routes/mis-propiedades'
 import { Route as MensajesRouteImport } from './routes/mensajes'
@@ -32,6 +33,11 @@ const TeEscuchamosRoute = TeEscuchamosRouteImport.update({
 const PublicarRoute = PublicarRouteImport.update({
   id: '/publicar',
   path: '/publicar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoliticaDePrivacidadRoute = PoliticaDePrivacidadRouteImport.update({
+  id: '/politica-de-privacidad',
+  path: '/politica-de-privacidad',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerfilRoute = PerfilRouteImport.update({
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/mensajes': typeof MensajesRoute
   '/mis-propiedades': typeof MisPropiedadesRoute
   '/perfil': typeof PerfilRoute
+  '/politica-de-privacidad': typeof PoliticaDePrivacidadRoute
   '/publicar': typeof PublicarRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
   '/terminos-y-condiciones': typeof TerminosYCondicionesRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/mensajes': typeof MensajesRoute
   '/mis-propiedades': typeof MisPropiedadesRoute
   '/perfil': typeof PerfilRoute
+  '/politica-de-privacidad': typeof PoliticaDePrivacidadRoute
   '/publicar': typeof PublicarRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
   '/terminos-y-condiciones': typeof TerminosYCondicionesRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/mensajes': typeof MensajesRoute
   '/mis-propiedades': typeof MisPropiedadesRoute
   '/perfil': typeof PerfilRoute
+  '/politica-de-privacidad': typeof PoliticaDePrivacidadRoute
   '/publicar': typeof PublicarRoute
   '/te-escuchamos': typeof TeEscuchamosRoute
   '/terminos-y-condiciones': typeof TerminosYCondicionesRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/mensajes'
     | '/mis-propiedades'
     | '/perfil'
+    | '/politica-de-privacidad'
     | '/publicar'
     | '/te-escuchamos'
     | '/terminos-y-condiciones'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/mensajes'
     | '/mis-propiedades'
     | '/perfil'
+    | '/politica-de-privacidad'
     | '/publicar'
     | '/te-escuchamos'
     | '/terminos-y-condiciones'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/mensajes'
     | '/mis-propiedades'
     | '/perfil'
+    | '/politica-de-privacidad'
     | '/publicar'
     | '/te-escuchamos'
     | '/terminos-y-condiciones'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   MensajesRoute: typeof MensajesRoute
   MisPropiedadesRoute: typeof MisPropiedadesRoute
   PerfilRoute: typeof PerfilRoute
+  PoliticaDePrivacidadRoute: typeof PoliticaDePrivacidadRoute
   PublicarRoute: typeof PublicarRoute
   TeEscuchamosRoute: typeof TeEscuchamosRoute
   TerminosYCondicionesRoute: typeof TerminosYCondicionesRoute
@@ -168,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/publicar'
       fullPath: '/publicar'
       preLoaderRoute: typeof PublicarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/politica-de-privacidad': {
+      id: '/politica-de-privacidad'
+      path: '/politica-de-privacidad'
+      fullPath: '/politica-de-privacidad'
+      preLoaderRoute: typeof PoliticaDePrivacidadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/perfil': {
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   MensajesRoute: MensajesRoute,
   MisPropiedadesRoute: MisPropiedadesRoute,
   PerfilRoute: PerfilRoute,
+  PoliticaDePrivacidadRoute: PoliticaDePrivacidadRoute,
   PublicarRoute: PublicarRoute,
   TeEscuchamosRoute: TeEscuchamosRoute,
   TerminosYCondicionesRoute: TerminosYCondicionesRoute,
