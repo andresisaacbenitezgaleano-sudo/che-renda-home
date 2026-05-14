@@ -1,0 +1,21 @@
+// 17 departamentos de Paraguay + Distrito Capital (Asunción)
+export const PARAGUAY_DEPARTAMENTOS: Record<string, string[]> = {
+  "Asunción (Distrito Capital)": ["Asunción"],
+  "Concepción": ["Concepción", "Belén", "Horqueta", "Loreto", "Yby Yaú"],
+  "San Pedro": ["San Pedro de Ycuamandiyú", "Antequera", "Choré", "General Resquín", "Lima", "San Estanislao", "Santa Rosa del Aguaray", "Tacuatí"],
+  "Cordillera": ["Caacupé", "Altos", "Arroyos y Esteros", "Atyrá", "Caraguatay", "Emboscada", "Eusebio Ayala", "Isla Pucú", "Itacurubí de la Cordillera", "Loma Grande", "Mbocayaty del Yhaguy", "Nueva Colombia", "Piribebuy", "Primero de Marzo", "San Bernardino", "San José Obrero", "Santa Elena", "Tobatí", "Valenzuela"],
+  "Guairá": ["Villarrica", "Borja", "Coronel Martínez", "Félix Pérez Cardozo", "General Eugenio A. Garay", "Independencia", "Itapé", "Iturbe", "José Fassardi", "Mbocayaty", "Natalicio Talavera", "Ñumí", "Paso Yobái", "San Salvador", "Yataity"],
+  "Caaguazú": ["Coronel Oviedo", "Caaguazú", "Carayaó", "Doctor J. Eulogio Estigarribia", "José Domingo Ocampos", "La Pastora", "Mariscal López", "Nueva Londres", "Raúl Arsenio Oviedo", "Repatriación", "San Joaquín", "San José de los Arroyos", "Santa Rosa del Mbutuy", "Simón Bolívar", "Vaquería", "Yhú"],
+  "Caazapá": ["Caazapá", "Abaí", "Buena Vista", "Doctor Moisés S. Bertoni", "General Higinio Morínigo", "Maciel", "San Juan Nepomuceno", "Tavaí", "Yegros", "Yuty"],
+  "Itapúa": ["Encarnación", "Bella Vista", "Cambyretá", "Capitán Meza", "Carmen del Paraná", "Coronel Bogado", "Edelira", "General Artigas", "Hohenau", "Jesús", "La Paz", "Mayor Otaño", "Natalio", "Obligado", "Pirapó", "San Cosme y Damián", "San Pedro del Paraná", "San Rafael del Paraná", "Tomás Romero Pereira", "Trinidad", "Yatytay"],
+  "Misiones": ["San Juan Bautista", "Ayolas", "San Ignacio", "San Miguel", "San Patricio", "Santa María", "Santa Rosa", "Santiago", "Villa Florida", "Yabebyry"],
+  "Paraguarí": ["Paraguarí", "Acahay", "Caapucú", "Carapeguá", "Escobar", "La Colmena", "Mbuyapey", "Pirayú", "Quiindy", "Quyquyhó", "San Roque González", "Sapucai", "Tebicuary-mí", "Yaguarón", "Ybycuí", "Ybytymí"],
+  "Alto Paraná": ["Ciudad del Este", "Doctor Juan León Mallorquín", "Hernandarias", "Iruña", "Itakyry", "Los Cedrales", "Mbaracayú", "Minga Guazú", "Minga Porá", "Naranjal", "Ñacunday", "Presidente Franco", "San Cristóbal", "Santa Rita", "Santa Rosa del Monday", "Yguazú"],
+  "Central": ["Areguá", "Capiatá", "Fernando de la Mora", "Guarambaré", "Itá", "Itauguá", "J. Augusto Saldívar", "Lambaré", "Limpio", "Luque", "Mariano Roque Alonso", "Nueva Italia", "Ñemby", "San Antonio", "San Lorenzo", "Villa Elisa", "Villeta", "Ypacaraí", "Ypané"],
+  "Ñeembucú": ["Pilar", "Alberdi", "Cerrito", "Desmochados", "General José Eduvigis Díaz", "Guazú Cuá", "Humaitá", "Isla Umbú", "Laureles", "Mayor Martínez", "Paso de Patria", "San Juan Bautista del Ñeembucú", "Tacuaras", "Villa Franca", "Villa Oliva", "Villalbín"],
+  "Amambay": ["Pedro Juan Caballero", "Bella Vista Norte", "Capitán Bado", "Karapaí", "Zanja Pytá"],
+  "Canindeyú": ["Salto del Guairá", "Corpus Christi", "Curuguaty", "General Francisco Caballero Álvarez", "Itanará", "Katueté", "La Paloma", "Maracaju", "Nueva Esperanza", "Villa Ygatimí", "Ybyrarobaná", "Ypejhú", "Yasy Cañy", "Yvy Pytá"],
+  "Presidente Hayes": ["Villa Hayes", "Benjamín Aceval", "Doctor José Falcón", "General José María Bruguez", "Nanawa", "Pozo Colorado", "Puerto Pinasco", "Tte. Esteban Martínez", "Tte. 1° Manuel Irala Fernández"],
+  "Boquerón": ["Filadelfia", "Loma Plata", "Mariscal Estigarribia"],
+  "Alto Paraguay": ["Fuerte Olimpo", "Bahía Negra", "Carmelo Peralta", "Puerto Casado"],
+};
