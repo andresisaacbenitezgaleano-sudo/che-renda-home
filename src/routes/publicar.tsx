@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Minus, Plus, Check } from "lucide-react";
+import { Minus, Plus, Check, Upload, X, Loader2 } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +18,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/site/AuthContext";
+import { PARAGUAY_DEPARTAMENTOS } from "@/lib/paraguay-geo";
+import { compressImage } from "@/lib/image-compress";
 
 export const Route = createFileRoute("/publicar")({
   head: () => ({ meta: [{ title: "Publicar anuncio — Che Renda T&T" }] }),
@@ -30,20 +32,10 @@ const STEPS = [
   "Capacidad",
   "Servicios",
   "Precios",
+  "Fotos y publicación",
 ];
 
 const TIPOS = ["Casa", "Departamento", "Quinta", "Cabaña", "Glamping"];
-
-const DEPARTAMENTOS: Record<string, string[]> = {
-  Central: ["Asunción", "Luque", "San Lorenzo", "Lambaré", "Fernando de la Mora"],
-  Cordillera: ["Caacupé", "Tobatí", "Piribebuy", "Atyrá"],
-  Itapúa: ["Encarnación", "Hohenau", "Bella Vista"],
-  "Alto Paraná": ["Ciudad del Este", "Hernandarias", "Presidente Franco"],
-  Paraguarí: ["Paraguarí", "Piribebuy", "Yaguarón"],
-  Misiones: ["San Juan Bautista", "Ayolas", "Santa Rosa"],
-  Ñeembucú: ["Pilar", "Alberdi"],
-  Guairá: ["Villarrica", "Colonia Independencia"],
-};
 
 const INSTALACIONES = [
   "Piscina",
@@ -70,17 +62,39 @@ const CONFORT = [
   "Detector de humo",
 ];
 
+const MODALIDADES: { value: string; label: string }[] = [
+  { value: "per_hour", label: "Por hora" },
+  { value: "per_night", label: "Por noche" },
+  { value: "per_week", label: "Por semana" },
+  { value: "per_month", label: "Por mes" },
+  { value: "annual", label: "Anual" },
+  { value: "full_weekend", label: "Fin de semana completo" },
+];
+
+const MAX_IMAGES = 10;
+const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
+
+type ImageItem = {
+  id: string;
+  originalName: string;
+  blob: Blob;
+  previewUrl: string;
+  originalSize: number;
+  compressedSize: number;
+};
+
 function PublicarPage() {
   const { user, openAuthModal } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
+
   // Paso 1
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [tipo, setTipo] = useState("");
 
-  // Paso 2
+  // Paso 2 — cascada
   const [departamento, setDepartamento] = useState("");
   const [ciudad, setCiudad] = useState("");
   const [direccion, setDireccion] = useState("");
@@ -103,49 +117,168 @@ function PublicarPage() {
   const [precio, setPrecio] = useState("");
   const [modalidad, setModalidad] = useState("");
 
+  // Paso 6 — imágenes + legal
+  const [images, setImages] = useState<ImageItem[]>([]);
+  const [compressing, setCompressing] = useState(false);
+  const [aceptaLegal, setAceptaLegal] = useState(false);
+
   const toggleServicio = (s: string) =>
     setServicios((prev) => ({ ...prev, [s]: !prev[s] }));
 
-  const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  const validateStep = (s: number): string | null => {
+    if (s === 0) {
+      if (!titulo.trim()) return "Ingresá el título del alojamiento";
+      if (!descripcion.trim()) return "Agregá una descripción";
+      if (!tipo) return "Seleccioná el tipo de propiedad";
+    }
+    if (s === 1) {
+      if (!departamento) return "Seleccioná un departamento";
+      if (!ciudad) return "Seleccioná una ciudad";
+    }
+    if (s === 4) {
+      if (!precio || Number(precio) <= 0) return "Ingresá un precio válido";
+      if (!modalidad) return "Seleccioná la modalidad de cobro";
+    }
+    return null;
+  };
+
+  const next = () => {
+    const err = validateStep(step);
+    if (err) {
+      toast.error(err);
+      return;
+    }
+    setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  };
   const prev = () => setStep((s) => Math.max(s - 1, 0));
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const remaining = MAX_IMAGES - images.length;
+    if (remaining <= 0) {
+      toast.error(`Máximo ${MAX_IMAGES} imágenes`);
+      return;
+    }
+    const list = Array.from(files).slice(0, remaining);
+    setCompressing(true);
+    const out: ImageItem[] = [];
+    for (const f of list) {
+      try {
+        if (!f.type.startsWith("image/")) {
+          toast.error(`${f.name}: no es una imagen`);
+          continue;
+        }
+        if (f.size > MAX_FILE_BYTES) {
+          toast.error(`${f.name}: supera 10 MB`);
+          continue;
+        }
+        const blob = await compressImage(f);
+        out.push({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          originalName: f.name,
+          blob,
+          previewUrl: URL.createObjectURL(blob),
+          originalSize: f.size,
+          compressedSize: blob.size,
+        });
+      } catch (e) {
+        toast.error(`Error procesando ${f.name}`);
+      }
+    }
+    setImages((prev) => [...prev, ...out]);
+    setCompressing(false);
+  };
+
+  const removeImage = (id: string) => {
+    setImages((prev) => {
+      const it = prev.find((x) => x.id === id);
+      if (it) URL.revokeObjectURL(it.previewUrl);
+      return prev.filter((x) => x.id !== id);
+    });
+  };
 
   const submit = async () => {
     if (!user) {
       openAuthModal();
       return;
     }
-    if (!titulo.trim() || !tipo || !precio || !modalidad) {
-      toast.error("Completá todos los campos obligatorios");
+    for (let i = 0; i <= 4; i++) {
+      const err = validateStep(i);
+      if (err) {
+        toast.error(err);
+        setStep(i);
+        return;
+      }
+    }
+    if (images.length === 0) {
+      toast.error("Subí al menos una foto del alojamiento");
+      return;
+    }
+    if (!aceptaLegal) {
+      toast.error("Debés aceptar los términos y condiciones");
       return;
     }
     setBusy(true);
-    const { error } = await supabase.from("properties").insert({
-      host_id: user.id,
-      title: titulo.trim(),
-      description: descripcion.trim() || null,
-      property_type: tipo,
-      department: departamento || null,
-      city: ciudad || null,
-      address: direccion || null,
-      guests: counts.huespedes,
-      rooms_ac: counts.habAire,
-      rooms_no_ac: counts.habSinAire,
-      beds: counts.camas,
-      bathrooms: counts.banos,
-      amenities: servicios,
-      pets_allowed: mascotas,
-      price: Number(precio),
-      price_modality: modalidad === "noche" ? "per_night" : "full_weekend",
-      status: "active",
-    });
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+    try {
+      // 1) Subir imágenes a Storage
+      const uploadedUrls: string[] = [];
+      for (const img of images) {
+        const path = `${user.id}/${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2)}.jpg`;
+        const { error: upErr } = await supabase.storage
+          .from("property-images")
+          .upload(path, img.blob, {
+            contentType: "image/jpeg",
+            upsert: false,
+          });
+        if (upErr) throw upErr;
+        const { data: pub } = supabase.storage
+          .from("property-images")
+          .getPublicUrl(path);
+        uploadedUrls.push(pub.publicUrl);
+      }
+
+      // 2) Insertar propiedad con URLs
+      const { error } = await supabase.from("properties").insert({
+        host_id: user.id,
+        title: titulo.trim(),
+        description: descripcion.trim() || null,
+        property_type: tipo,
+        department: departamento || null,
+        city: ciudad || null,
+        address: direccion || null,
+        guests: counts.huespedes,
+        rooms_ac: counts.habAire,
+        rooms_no_ac: counts.habSinAire,
+        beds: counts.camas,
+        bathrooms: counts.banos,
+        amenities: servicios,
+        pets_allowed: mascotas,
+        price: Number(precio),
+        price_modality: modalidad as
+          | "per_hour"
+          | "per_night"
+          | "per_week"
+          | "per_month"
+          | "annual"
+          | "full_weekend",
+        images: uploadedUrls,
+        status: "active",
+      });
+      if (error) throw error;
+      toast.success("¡Anuncio publicado correctamente!");
+      navigate({ to: "/mis-propiedades" });
+    } catch (e: any) {
+      toast.error(e?.message ?? "No se pudo publicar el anuncio");
+    } finally {
+      setBusy(false);
     }
-    toast.success("¡Anuncio publicado correctamente!");
-    navigate({ to: "/mis-propiedades" });
   };
+
+  const ciudadesDelDepto = departamento
+    ? PARAGUAY_DEPARTAMENTOS[departamento] ?? []
+    : [];
 
   return (
     <SiteShell>
@@ -217,8 +350,8 @@ function PublicarPage() {
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccioná un departamento" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(DEPARTAMENTOS).map((d) => (
+                  <SelectContent className="max-h-72">
+                    {Object.keys(PARAGUAY_DEPARTAMENTOS).map((d) => (
                       <SelectItem key={d} value={d}>
                         {d}
                       </SelectItem>
@@ -242,8 +375,8 @@ function PublicarPage() {
                       }
                     />
                   </SelectTrigger>
-                  <SelectContent>
-                    {(DEPARTAMENTOS[departamento] ?? []).map((c) => (
+                  <SelectContent className="max-h-72">
+                    {ciudadesDelDepto.map((c) => (
                       <SelectItem key={c} value={c}>
                         {c}
                       </SelectItem>
@@ -319,14 +452,15 @@ function PublicarPage() {
           {step === 4 && (
             <div className="space-y-5">
               <div className="grid gap-2">
-                <Label htmlFor="precio">Precio base (USD) *</Label>
+                <Label htmlFor="precio">Precio base (Gs.) *</Label>
                 <Input
                   id="precio"
                   type="number"
+                  inputMode="numeric"
                   min={0}
                   value={precio}
                   onChange={(e) => setPrecio(e.target.value)}
-                  placeholder="120"
+                  placeholder="Ej: 350000"
                 />
               </div>
               <div className="grid gap-2">
@@ -336,12 +470,100 @@ function PublicarPage() {
                     <SelectValue placeholder="Seleccioná modalidad" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="noche">Por noche</SelectItem>
-                    <SelectItem value="finde">
-                      Por fin de semana completo
-                    </SelectItem>
+                    {MODALIDADES.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>
+                        {m.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+          )}
+
+          {step === 5 && (
+            <div className="space-y-5">
+              <div>
+                <h3 className="mb-2 font-display text-base font-semibold">
+                  Fotos del alojamiento
+                </h3>
+                <p className="mb-3 text-xs text-muted-foreground">
+                  Hasta {MAX_IMAGES} imágenes. Se aceptan archivos de hasta 10
+                  MB; se comprimen automáticamente para optimizar la carga.
+                </p>
+
+                <label
+                  className={cn(
+                    "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border/70 bg-muted/30 px-6 py-8 text-center transition hover:bg-muted/50",
+                    compressing && "pointer-events-none opacity-60",
+                  )}
+                >
+                  {compressing ? (
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  ) : (
+                    <Upload className="h-6 w-6 text-muted-foreground" />
+                  )}
+                  <span className="text-sm font-medium">
+                    {compressing
+                      ? "Procesando imágenes…"
+                      : "Subir fotos desde tu dispositivo"}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    JPG, PNG o WEBP
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      handleFiles(e.target.files);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+
+                {images.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {images.map((img) => (
+                      <div
+                        key={img.id}
+                        className="group relative overflow-hidden rounded-xl border border-border/60"
+                      >
+                        <img
+                          src={img.previewUrl}
+                          alt={img.originalName}
+                          className="aspect-square w-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(img.id)}
+                          className="absolute right-1.5 top-1.5 rounded-full bg-background/90 p-1 shadow opacity-0 transition group-hover:opacity-100"
+                          aria-label="Eliminar"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1 text-[10px] text-white">
+                          {(img.compressedSize / 1024).toFixed(0)} KB
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+                <label className="flex cursor-pointer items-start gap-3">
+                  <Checkbox
+                    checked={aceptaLegal}
+                    onCheckedChange={(v) => setAceptaLegal(!!v)}
+                    className="mt-0.5"
+                  />
+                  <span className="text-sm leading-relaxed">
+                    Acepto los términos, bases y condiciones legales de Che
+                    Renda T&T.
+                  </span>
+                </label>
               </div>
             </div>
           )}
@@ -351,7 +573,7 @@ function PublicarPage() {
               type="button"
               variant="outline"
               onClick={prev}
-              disabled={step === 0}
+              disabled={step === 0 || busy}
             >
               Atrás
             </Button>
@@ -367,10 +589,17 @@ function PublicarPage() {
               <Button
                 type="button"
                 onClick={submit}
-                disabled={busy}
+                disabled={busy || !aceptaLegal || images.length === 0}
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                {busy ? "Publicando…" : "Publicar anuncio"}
+                {busy ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Publicando…
+                  </>
+                ) : (
+                  "Publicar anuncio"
+                )}
               </Button>
             )}
           </div>
