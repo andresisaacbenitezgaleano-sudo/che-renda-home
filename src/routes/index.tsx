@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/site/Navbar";
-import { SearchBar } from "@/components/site/SearchBar";
+import { SearchBar, type SearchFilters } from "@/components/site/SearchBar";
 import { PropertyCard, type Property } from "@/components/site/PropertyCard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
