@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Heart, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatGs } from "@/lib/format";
 
 export interface Property {
   id: string;
@@ -53,7 +54,7 @@ export function PropertyCard({ property }: { property: Property }) {
         </div>
         <p className="text-sm text-muted-foreground">{property.location}</p>
         <p className="pt-1 text-sm text-foreground">
-          <span className="font-semibold">${property.pricePerNight}</span>{" "}
+          <span className="font-semibold">{formatGs(property.pricePerNight)}</span>{" "}
           <span className="text-muted-foreground">/ noche</span>
         </p>
       </div>

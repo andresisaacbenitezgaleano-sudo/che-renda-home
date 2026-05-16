@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Search, MapPin, CalendarDays, Users, Minus, Plus } from "lucide-react";
+import { Search, MapPin, CalendarDays, Users, Banknote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -19,6 +21,7 @@ import {
 import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { PARAGUAY_DEPARTAMENTOS } from "@/lib/paraguay-geo";
+import { formatGs } from "@/lib/format";
 
 interface GuestState {
   adultos: number;
@@ -40,11 +43,13 @@ export interface SearchFilters {
   dateFrom?: Date;
   dateTo?: Date;
   guests: number;
+  priceMin?: number;
+  priceMax?: number;
 }
 
 const ANY = "__any__";
 
-function GuestRow({
+function NumberField({
   label,
   hint,
   value,
@@ -58,31 +63,22 @@ function GuestRow({
   min?: number;
 }) {
   return (
-    <div className="flex items-center justify-between py-3">
-      <div>
+    <div className="flex items-center justify-between gap-3 py-2.5">
+      <div className="flex-1">
         <div className="text-sm font-semibold text-foreground">{label}</div>
         <div className="text-xs text-muted-foreground">{hint}</div>
       </div>
-      <div className="flex items-center gap-3">
-        <Button
-          size="icon"
-          variant="outline"
-          className="h-8 w-8 rounded-full"
-          onClick={() => onChange(Math.max(min, value - 1))}
-          disabled={value <= min}
-        >
-          <Minus className="h-3.5 w-3.5" />
-        </Button>
-        <span className="w-5 text-center text-sm font-medium">{value}</span>
-        <Button
-          size="icon"
-          variant="outline"
-          className="h-8 w-8 rounded-full"
-          onClick={() => onChange(value + 1)}
-        >
-          <Plus className="h-3.5 w-3.5" />
-        </Button>
-      </div>
+      <Input
+        type="number"
+        inputMode="numeric"
+        min={min}
+        value={value}
+        onChange={(e) => {
+          const v = parseInt(e.target.value, 10);
+          onChange(Number.isFinite(v) ? Math.max(min, v) : min);
+        }}
+        className="h-9 w-20 text-center"
+      />
     </div>
   );
 }
@@ -154,6 +150,56 @@ function DestinoPicker({
   );
 }
 
+function PriceBlock({
+  min,
+  max,
+  onChange,
+}: {
+  min?: number;
+  max?: number;
+  onChange: (min?: number, max?: number) => void;
+}) {
+  return (
+    <div className="space-y-3 p-1">
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label className="text-xs">Mínimo (Gs.)</Label>
+          <Input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            placeholder="0"
+            value={min ?? ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              onChange(v === "" ? undefined : Math.max(0, Number(v)), max);
+            }}
+            className="mt-1 h-10"
+          />
+        </div>
+        <div>
+          <Label className="text-xs">Máximo (Gs.)</Label>
+          <Input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            placeholder="Sin tope"
+            value={max ?? ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              onChange(min, v === "" ? undefined : Math.max(0, Number(v)));
+            }}
+            className="mt-1 h-10"
+          />
+        </div>
+      </div>
+      <p className="text-[11px] text-muted-foreground">
+        Todos los precios en Guaraníes (Gs.).
+      </p>
+    </div>
+  );
+}
+
 export function SearchBar({
   onSearch,
 }: {
@@ -163,6 +209,8 @@ export function SearchBar({
   const [city, setCity] = useState<string | undefined>();
   const [range, setRange] = useState<DateRange | undefined>();
   const [guests, setGuests] = useState<GuestState>(initialGuests);
+  const [priceMin, setPriceMin] = useState<number | undefined>();
+  const [priceMax, setPriceMax] = useState<number | undefined>();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const totalGuests = guests.adultos + guests.ninos;
@@ -181,6 +229,13 @@ export function SearchBar({
       : format(range.from, "d MMM", { locale: es })
     : "Añadir fechas";
 
+  const priceLabel =
+    priceMin == null && priceMax == null
+      ? "Cualquier precio"
+      : `${priceMin != null ? formatGs(priceMin) : "Gs. 0"} – ${
+          priceMax != null ? formatGs(priceMax) : "∞"
+        }`;
+
   const runSearch = () => {
     onSearch?.({
       department,
@@ -188,11 +243,13 @@ export function SearchBar({
       dateFrom: range?.from,
       dateTo: range?.to,
       guests: totalGuests,
+      priceMin,
+      priceMax,
     });
   };
 
   return (
-    <div className="mx-auto w-full max-w-4xl">
+    <div className="mx-auto w-full max-w-5xl">
       {/* Mobile */}
       <div className="md:hidden">
         <Popover open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -216,7 +273,7 @@ export function SearchBar({
           </PopoverTrigger>
           <PopoverContent
             align="center"
-            className="z-50 w-[92vw] max-w-md space-y-4 p-4"
+            className="z-50 max-h-[80vh] w-[92vw] max-w-md space-y-4 overflow-y-auto p-4"
           >
             <div>
               <div className="mb-1 text-[11px] font-bold uppercase tracking-wide text-foreground">
@@ -246,9 +303,22 @@ export function SearchBar({
             </div>
             <div>
               <div className="mb-1 text-[11px] font-bold uppercase tracking-wide text-foreground">
+                Precio (Gs.)
+              </div>
+              <PriceBlock
+                min={priceMin}
+                max={priceMax}
+                onChange={(mn, mx) => {
+                  setPriceMin(mn);
+                  setPriceMax(mx);
+                }}
+              />
+            </div>
+            <div>
+              <div className="mb-1 text-[11px] font-bold uppercase tracking-wide text-foreground">
                 Huéspedes
               </div>
-              <GuestRow
+              <NumberField
                 label="Adultos"
                 hint="13 años o más"
                 value={guests.adultos}
@@ -256,11 +326,25 @@ export function SearchBar({
                 min={1}
               />
               <div className="border-t border-border" />
-              <GuestRow
+              <NumberField
                 label="Niños"
                 hint="De 2 a 12 años"
                 value={guests.ninos}
                 onChange={(n) => setGuests({ ...guests, ninos: n })}
+              />
+              <div className="border-t border-border" />
+              <NumberField
+                label="Bebés"
+                hint="Menores de 2 años"
+                value={guests.bebes}
+                onChange={(n) => setGuests({ ...guests, bebes: n })}
+              />
+              <div className="border-t border-border" />
+              <NumberField
+                label="Mascotas"
+                hint="Animal de compañía"
+                value={guests.mascotas}
+                onChange={(n) => setGuests({ ...guests, mascotas: n })}
               />
             </div>
             <Button
@@ -351,6 +435,41 @@ export function SearchBar({
           <Popover>
             <PopoverTrigger asChild>
               <button className="flex flex-1 items-center gap-3 rounded-full px-5 py-2 text-left transition-colors hover:bg-accent/50">
+                <Banknote className="h-4 w-4 text-brand" />
+                <div className="flex-1">
+                  <div className="text-[11px] font-bold uppercase tracking-wide text-foreground">
+                    Precio
+                  </div>
+                  <div
+                    className={cn(
+                      "truncate text-sm",
+                      priceMin != null || priceMax != null
+                        ? "text-foreground"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    {priceLabel}
+                  </div>
+                </div>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-4" align="center">
+              <PriceBlock
+                min={priceMin}
+                max={priceMax}
+                onChange={(mn, mx) => {
+                  setPriceMin(mn);
+                  setPriceMax(mx);
+                }}
+              />
+            </PopoverContent>
+          </Popover>
+
+          <div className="my-2 w-px bg-border" />
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="flex flex-1 items-center gap-3 rounded-full px-5 py-2 text-left transition-colors hover:bg-accent/50">
                 <Users className="h-4 w-4 text-brand" />
                 <div className="flex-1">
                   <div className="text-[11px] font-bold uppercase tracking-wide text-foreground">
@@ -361,7 +480,7 @@ export function SearchBar({
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-80 p-4" align="end">
-              <GuestRow
+              <NumberField
                 label="Adultos"
                 hint="13 años o más"
                 value={guests.adultos}
@@ -369,23 +488,23 @@ export function SearchBar({
                 min={1}
               />
               <div className="border-t border-border" />
-              <GuestRow
+              <NumberField
                 label="Niños"
                 hint="De 2 a 12 años"
                 value={guests.ninos}
                 onChange={(n) => setGuests({ ...guests, ninos: n })}
               />
               <div className="border-t border-border" />
-              <GuestRow
+              <NumberField
                 label="Bebés"
                 hint="Menores de 2 años"
                 value={guests.bebes}
                 onChange={(n) => setGuests({ ...guests, bebes: n })}
               />
               <div className="border-t border-border" />
-              <GuestRow
+              <NumberField
                 label="Mascotas"
-                hint="¿Viajas con un animal de servicio?"
+                hint="Animal de compañía"
                 value={guests.mascotas}
                 onChange={(n) => setGuests({ ...guests, mascotas: n })}
               />
