@@ -106,7 +106,7 @@ function Index() {
         </div>
 
         <div className="relative z-10 -mt-12 px-4 md:-mt-10">
-          <SearchBar key={resetKey} />
+          <SearchBar key={resetKey} onSearch={setFilters} />
         </div>
       </section>
 
