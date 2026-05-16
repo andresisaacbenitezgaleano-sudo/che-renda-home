@@ -50,6 +50,8 @@ function Index() {
       if (filters.department) q = q.eq("department", filters.department);
       if (filters.city) q = q.eq("city", filters.city);
       if (filters.guests > 0) q = q.gte("guests", filters.guests);
+      if (filters.priceMin != null) q = q.gte("price", filters.priceMin);
+      if (filters.priceMax != null) q = q.lte("price", filters.priceMax);
 
       if (filters.dateFrom && filters.dateTo) {
         const { data: conflicting } = await supabase
