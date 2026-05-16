@@ -11,7 +11,7 @@ export function SiteShell({ children, hideBack = false }: { children: ReactNode;
   const showBack = !hideBack && router.state.location.pathname !== "/";
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col">
       <Navbar />
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
         {showBack && (

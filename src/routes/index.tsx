@@ -78,7 +78,7 @@ function Index() {
   });
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col">
       <Navbar onReset={() => { setResetKey((k) => k + 1); setFilters({ guests: 0 }); }} />
 
       <section className="relative">
