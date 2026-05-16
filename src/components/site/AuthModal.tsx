@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plane, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
+import { Logo } from "./Logo";
 
 type Mode = "signin" | "signup" | "forgot";
 
@@ -113,9 +114,7 @@ export function AuthModal() {
         </button>
 
         <div className="flex flex-col items-center border-b border-border/60 px-6 pb-5 pt-7 text-center">
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md">
-            <Plane className="h-5 w-5 -rotate-45" />
-          </span>
+          <Logo size={56} className="shadow-md" />
           <h2 className="mt-3 font-display text-xl font-bold text-foreground">
             {mode === "forgot" ? "Restablecer contraseña" : "Iniciá sesión o registrate"}
           </h2>
