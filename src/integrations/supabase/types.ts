@@ -20,6 +20,7 @@ export type Database = {
           check_in: string
           check_out: string
           children: number
+          contact_phone: string | null
           created_at: string
           guest_id: string
           host_id: string
@@ -35,6 +36,7 @@ export type Database = {
           check_in: string
           check_out: string
           children?: number
+          contact_phone?: string | null
           created_at?: string
           guest_id: string
           host_id: string
@@ -50,6 +52,7 @@ export type Database = {
           check_in?: string
           check_out?: string
           children?: number
+          contact_phone?: string | null
           created_at?: string
           guest_id?: string
           host_id?: string
@@ -202,7 +205,10 @@ export type Database = {
           amenities: Json
           bathrooms: number
           beds: number
+          check_in_time: string | null
+          check_out_time: string | null
           city: string | null
+          contact_phone: string | null
           created_at: string
           department: string | null
           description: string | null
@@ -225,7 +231,10 @@ export type Database = {
           amenities?: Json
           bathrooms?: number
           beds?: number
+          check_in_time?: string | null
+          check_out_time?: string | null
           city?: string | null
+          contact_phone?: string | null
           created_at?: string
           department?: string | null
           description?: string | null
@@ -248,7 +257,10 @@ export type Database = {
           amenities?: Json
           bathrooms?: number
           beds?: number
+          check_in_time?: string | null
+          check_out_time?: string | null
           city?: string | null
+          contact_phone?: string | null
           created_at?: string
           department?: string | null
           description?: string | null
