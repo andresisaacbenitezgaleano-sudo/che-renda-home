@@ -29,13 +29,31 @@ interface AuthCtx {
 
 const Ctx = createContext<AuthCtx | null>(null);
 
+const LANG_KEY = "cherenda.lang";
+const DARK_KEY = "cherenda.dark";
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [lang, setLang] = useState<Lang>("es");
+  const [lang, setLangState] = useState<Lang>("es");
   const [darkMode, setDark] = useState(false);
+
+  // Hidratar preferencias persistidas
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const storedLang = localStorage.getItem(LANG_KEY) as Lang | null;
+      if (storedLang) setLangState(storedLang);
+      const storedDark = localStorage.getItem(DARK_KEY) === "1";
+      setDark(storedDark);
+      document.documentElement.classList.toggle("dark", storedDark);
+      document.documentElement.lang = storedLang ?? "es";
+    } catch {
+      /* noop */
+    }
+  }, []);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
@@ -50,11 +68,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  const setLang = useCallback((l: Lang) => {
+    setLangState(l);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(LANG_KEY, l);
+      document.documentElement.lang = l;
+    }
+  }, []);
+
   const toggleDarkMode = useCallback(() => {
     setDark((d) => {
       const next = !d;
       if (typeof document !== "undefined") {
         document.documentElement.classList.toggle("dark", next);
+        try {
+          localStorage.setItem(DARK_KEY, next ? "1" : "0");
+        } catch {
+          /* noop */
+        }
       }
       return next;
     });

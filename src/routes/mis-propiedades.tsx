@@ -10,6 +10,7 @@ import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/site/AuthContext";
 import { toast } from "sonner";
+import { formatGs } from "@/lib/format";
 import prop1 from "@/assets/prop-1.jpg";
 
 export const Route = createFileRoute("/mis-propiedades")({
@@ -127,7 +128,7 @@ function MisPropiedadesPage() {
                         {[p.city, p.department].filter(Boolean).join(", ") || "Paraguay"}
                       </p>
                       <p className="mt-1 text-sm">
-                        <span className="font-semibold">${Number(p.price)}</span>{" "}
+                        <span className="font-semibold">{formatGs(p.price)}</span>{" "}
                         <span className="text-muted-foreground">/ noche</span>
                       </p>
                     </div>
@@ -141,9 +142,11 @@ function MisPropiedadesPage() {
                         />
                         <span className="text-muted-foreground">{active ? "Activo" : "Pausado"}</span>
                       </label>
-                      <Button variant="outline" size="sm">
-                        <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                        Editar anuncio
+                      <Button asChild variant="outline" size="sm">
+                        <Link to="/publicar" search={{ id: p.id }}>
+                          <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                          Editar anuncio
+                        </Link>
                       </Button>
                     </div>
                   </div>

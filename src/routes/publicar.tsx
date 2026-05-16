@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { Minus, Plus, Check, Upload, X, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { z } from "zod";
+import { Check, Upload, X, Loader2 } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,8 +22,13 @@ import { useAuth } from "@/components/site/AuthContext";
 import { PARAGUAY_DEPARTAMENTOS } from "@/lib/paraguay-geo";
 import { compressImage } from "@/lib/image-compress";
 
+const searchSchema = z.object({
+  id: z.string().uuid().optional(),
+});
+
 export const Route = createFileRoute("/publicar")({
   head: () => ({ meta: [{ title: "Publicar anuncio — Che Renda T&T" }] }),
+  validateSearch: searchSchema,
   component: PublicarPage,
 });
 
@@ -31,7 +37,7 @@ const STEPS = [
   "Ubicación",
   "Capacidad",
   "Servicios",
-  "Precios",
+  "Precio y horarios",
   "Fotos y publicación",
 ];
 
@@ -72,29 +78,33 @@ const MODALIDADES: { value: string; label: string }[] = [
 ];
 
 const MAX_IMAGES = 10;
-const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
 
 type ImageItem = {
   id: string;
   originalName: string;
-  blob: Blob;
+  blob: Blob | null; // null = imagen ya almacenada (modo edición)
   previewUrl: string;
-  originalSize: number;
   compressedSize: number;
+  existingUrl?: string;
 };
 
 function PublicarPage() {
   const { user, openAuthModal } = useAuth();
   const navigate = useNavigate();
+  const { id: editingId } = Route.useSearch();
+  const isEditing = !!editingId;
+
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [loadingExisting, setLoadingExisting] = useState(isEditing);
 
   // Paso 1
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [tipo, setTipo] = useState("");
 
-  // Paso 2 — cascada
+  // Paso 2
   const [departamento, setDepartamento] = useState("");
   const [ciudad, setCiudad] = useState("");
   const [direccion, setDireccion] = useState("");
@@ -116,11 +126,65 @@ function PublicarPage() {
   // Paso 5
   const [precio, setPrecio] = useState("");
   const [modalidad, setModalidad] = useState("");
+  const [checkInTime, setCheckInTime] = useState("14:00");
+  const [checkOutTime, setCheckOutTime] = useState("10:00");
+  const [contactPhone, setContactPhone] = useState("");
 
-  // Paso 6 — imágenes + legal
+  // Paso 6
   const [images, setImages] = useState<ImageItem[]>([]);
   const [compressing, setCompressing] = useState(false);
   const [aceptaLegal, setAceptaLegal] = useState(false);
+
+  // Cargar propiedad existente (modo edición)
+  useEffect(() => {
+    if (!isEditing || !user) return;
+    (async () => {
+      setLoadingExisting(true);
+      const { data, error } = await supabase
+        .from("properties")
+        .select("*")
+        .eq("id", editingId!)
+        .maybeSingle();
+      if (error || !data) {
+        toast.error("No se pudo cargar la publicación");
+        setLoadingExisting(false);
+        return;
+      }
+      setTitulo(data.title ?? "");
+      setDescripcion(data.description ?? "");
+      setTipo(data.property_type ?? "");
+      setDepartamento(data.department ?? "");
+      setCiudad(data.city ?? "");
+      setDireccion(data.address ?? "");
+      setCounts({
+        huespedes: data.guests ?? 1,
+        habitaciones: (data.rooms_ac ?? 0) + (data.rooms_no_ac ?? 0) || 1,
+        habAire: data.rooms_ac ?? 0,
+        habSinAire: data.rooms_no_ac ?? 0,
+        camas: data.beds ?? 1,
+        banos: data.bathrooms ?? 1,
+      });
+      setServicios((data.amenities as Record<string, boolean>) ?? {});
+      setMascotas(!!data.pets_allowed);
+      setPrecio(String(data.price ?? ""));
+      setModalidad(data.price_modality ?? "");
+      setCheckInTime((data as any).check_in_time ?? "14:00");
+      setCheckOutTime((data as any).check_out_time ?? "10:00");
+      setContactPhone((data as any).contact_phone ?? "");
+      setImages(
+        (data.images ?? []).map((url: string, i: number) => ({
+          id: `existing-${i}`,
+          originalName: `Imagen ${i + 1}`,
+          blob: null,
+          previewUrl: url,
+          compressedSize: 0,
+          existingUrl: url,
+        })),
+      );
+      setAceptaLegal(true); // ya aceptó al publicar originalmente
+      setLoadingExisting(false);
+    })();
+  }, [isEditing, editingId, user]);
 
   const toggleServicio = (s: string) =>
     setServicios((prev) => ({ ...prev, [s]: !prev[s] }));
@@ -136,8 +200,12 @@ function PublicarPage() {
       if (!ciudad) return "Seleccioná una ciudad";
     }
     if (s === 4) {
-      if (!precio || Number(precio) <= 0) return "Ingresá un precio válido";
+      if (!precio || Number(precio) <= 0) return "Ingresá un precio válido en Guaraníes";
       if (!modalidad) return "Seleccioná la modalidad de cobro";
+      if (!checkInTime) return "Definí el horario de check-in";
+      if (!checkOutTime) return "Definí el horario de check-out";
+      if (!contactPhone.trim() || contactPhone.trim().length < 6)
+        return "Ingresá un número de contacto válido";
     }
     return null;
   };
@@ -178,10 +246,9 @@ function PublicarPage() {
           originalName: f.name,
           blob,
           previewUrl: URL.createObjectURL(blob),
-          originalSize: f.size,
           compressedSize: blob.size,
         });
-      } catch (e) {
+      } catch {
         toast.error(`Error procesando ${f.name}`);
       }
     }
@@ -192,7 +259,7 @@ function PublicarPage() {
   const removeImage = (id: string) => {
     setImages((prev) => {
       const it = prev.find((x) => x.id === id);
-      if (it) URL.revokeObjectURL(it.previewUrl);
+      if (it && it.blob) URL.revokeObjectURL(it.previewUrl);
       return prev.filter((x) => x.id !== id);
     });
   };
@@ -220,9 +287,14 @@ function PublicarPage() {
     }
     setBusy(true);
     try {
-      // 1) Subir imágenes a Storage
-      const uploadedUrls: string[] = [];
+      // Subir solo las imágenes nuevas (blob != null); conservar las existentes
+      const finalUrls: string[] = [];
       for (const img of images) {
+        if (img.existingUrl && !img.blob) {
+          finalUrls.push(img.existingUrl);
+          continue;
+        }
+        if (!img.blob) continue;
         const path = `${user.id}/${Date.now()}-${Math.random()
           .toString(36)
           .slice(2)}.jpg`;
@@ -236,11 +308,10 @@ function PublicarPage() {
         const { data: pub } = supabase.storage
           .from("property-images")
           .getPublicUrl(path);
-        uploadedUrls.push(pub.publicUrl);
+        finalUrls.push(pub.publicUrl);
       }
 
-      // 2) Insertar propiedad con URLs
-      const { error } = await supabase.from("properties").insert({
+      const payload = {
         host_id: user.id,
         title: titulo.trim(),
         description: descripcion.trim() || null,
@@ -263,14 +334,28 @@ function PublicarPage() {
           | "per_month"
           | "annual"
           | "full_weekend",
-        images: uploadedUrls,
-        status: "active",
-      });
-      if (error) throw error;
-      toast.success("¡Anuncio publicado correctamente!");
+        images: finalUrls,
+        status: "active" as const,
+        contact_phone: contactPhone.trim(),
+        check_in_time: checkInTime,
+        check_out_time: checkOutTime,
+      };
+
+      if (isEditing) {
+        const { error } = await supabase
+          .from("properties")
+          .update(payload)
+          .eq("id", editingId!);
+        if (error) throw error;
+        toast.success("¡Anuncio actualizado correctamente!");
+      } else {
+        const { error } = await supabase.from("properties").insert(payload);
+        if (error) throw error;
+        toast.success("¡Anuncio publicado correctamente!");
+      }
       navigate({ to: "/mis-propiedades" });
     } catch (e: any) {
-      toast.error(e?.message ?? "No se pudo publicar el anuncio");
+      toast.error(e?.message ?? "No se pudo guardar el anuncio");
     } finally {
       setBusy(false);
     }
@@ -280,13 +365,27 @@ function PublicarPage() {
     ? PARAGUAY_DEPARTAMENTOS[departamento] ?? []
     : [];
 
+  if (loadingExisting) {
+    return (
+      <SiteShell>
+        <div className="mx-auto flex max-w-3xl items-center justify-center py-20 text-muted-foreground">
+          <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Cargando publicación…
+        </div>
+      </SiteShell>
+    );
+  }
+
   return (
     <SiteShell>
       <div className="mx-auto max-w-3xl">
         <div className="mb-6">
-          <h1 className="font-display text-3xl font-bold">Publicar anuncio</h1>
+          <h1 className="font-display text-3xl font-bold">
+            {isEditing ? "Editar anuncio" : "Publicar anuncio"}
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Completá los pasos para crear tu Che Renda.
+            {isEditing
+              ? "Actualizá los datos de tu Che Renda."
+              : "Completá los pasos para crear tu Che Renda."}
           </p>
         </div>
 
@@ -408,7 +507,7 @@ function PublicarPage() {
                   ["banos", "Cantidad de baños"],
                 ] as const
               ).map(([key, label]) => (
-                <Counter
+                <NumberRow
                   key={key}
                   label={label}
                   value={counts[key]}
@@ -478,6 +577,42 @@ function PublicarPage() {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="ci">Horario de Check-in *</Label>
+                  <Input
+                    id="ci"
+                    type="time"
+                    value={checkInTime}
+                    onChange={(e) => setCheckInTime(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="co">Horario de Check-out *</Label>
+                  <Input
+                    id="co"
+                    type="time"
+                    value={checkOutTime}
+                    onChange={(e) => setCheckOutTime(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="tel">Número de contacto del anfitrión *</Label>
+                <Input
+                  id="tel"
+                  type="tel"
+                  inputMode="tel"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  placeholder="Ej: +595 981 123 456"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Se compartirá con los huéspedes que confirmen una reserva.
+                </p>
+              </div>
             </div>
           )}
 
@@ -543,9 +678,11 @@ function PublicarPage() {
                         >
                           <X className="h-4 w-4" />
                         </button>
-                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1 text-[10px] text-white">
-                          {(img.compressedSize / 1024).toFixed(0)} KB
-                        </div>
+                        {img.compressedSize > 0 && (
+                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1 text-[10px] text-white">
+                            {(img.compressedSize / 1024).toFixed(0)} KB
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -560,8 +697,16 @@ function PublicarPage() {
                     className="mt-0.5"
                   />
                   <span className="text-sm leading-relaxed">
-                    Acepto los términos, bases y condiciones legales de Che
-                    Renda T&T.
+                    Acepto los{" "}
+                    <a
+                      href="/terminos-y-condiciones"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-primary underline-offset-2 hover:underline"
+                    >
+                      términos, bases y condiciones legales
+                    </a>{" "}
+                    de Che Renda T&T.
                   </span>
                 </label>
               </div>
@@ -595,8 +740,10 @@ function PublicarPage() {
                 {busy ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Publicando…
+                    Guardando…
                   </>
+                ) : isEditing ? (
+                  "Guardar cambios"
                 ) : (
                   "Publicar anuncio"
                 )}
@@ -645,7 +792,7 @@ function Stepper({ step }: { step: number }) {
   );
 }
 
-function Counter({
+function NumberRow({
   label,
   value,
   onChange,
@@ -655,30 +802,19 @@ function Counter({
   onChange: (v: number) => void;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-border/60 px-4 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 px-4 py-3">
       <span className="text-sm font-medium">{label}</span>
-      <div className="flex items-center gap-3">
-        <Button
-          type="button"
-          size="icon"
-          variant="outline"
-          className="h-8 w-8 rounded-full"
-          onClick={() => onChange(value - 1)}
-          disabled={value <= 0}
-        >
-          <Minus className="h-4 w-4" />
-        </Button>
-        <span className="w-6 text-center text-sm font-semibold">{value}</span>
-        <Button
-          type="button"
-          size="icon"
-          variant="outline"
-          className="h-8 w-8 rounded-full"
-          onClick={() => onChange(value + 1)}
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
+      <Input
+        type="number"
+        inputMode="numeric"
+        min={0}
+        value={value}
+        onChange={(e) => {
+          const v = parseInt(e.target.value, 10);
+          onChange(Number.isFinite(v) ? Math.max(0, v) : 0);
+        }}
+        className="h-9 w-20 text-center"
+      />
     </div>
   );
 }

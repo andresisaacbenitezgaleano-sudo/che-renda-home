@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   Menu,
-  Plane,
   User,
   Globe,
   HelpCircle,
@@ -16,6 +15,7 @@ import {
   Moon,
   ChevronLeft,
 } from "lucide-react";
+import { Logo } from "./Logo";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -65,17 +65,15 @@ export function Navbar({ onReset }: NavbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
           to="/"
           onClick={() => onReset?.()}
-          className="group flex items-center gap-2 transition-opacity hover:opacity-80"
+          className="group flex items-center gap-2.5 transition-opacity hover:opacity-80"
           aria-label="Inicio Che Renda T&T"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md">
-            <Plane className="h-4 w-4 -rotate-45" />
-          </span>
+          <Logo size={40} />
           <span className="flex flex-col leading-none">
             <span className="font-display text-lg font-bold text-foreground">
               Che Renda

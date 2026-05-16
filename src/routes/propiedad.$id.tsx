@@ -3,22 +3,25 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Share, Heart, Star, Award, Grid3x3, ChevronDown,
-  Users, Minus, Plus, CalendarDays,
+  Users, CalendarDays,
   ChefHat, Wifi, Briefcase, Car, Cctv,
   Waves, Flame, Tv, Snowflake, Bed, Microwave, Shirt,
-  ShieldCheck, HeartPulse, AlertTriangle, Bath, PawPrint,
-  Trophy, Volleyball, Sparkles,
+  HeartPulse, AlertTriangle, Bath, PawPrint,
+  Trophy, Volleyball, Sparkles, Loader2,
 } from "lucide-react";
 import { format, differenceInCalendarDays } from "date-fns";
 import { es } from "date-fns/locale";
 import type { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -26,7 +29,10 @@ import {
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/site/AuthContext";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { formatGs, PRICE_MODALITY_LABEL } from "@/lib/format";
 
 import p1 from "@/assets/prop-1.jpg";
 import p2 from "@/assets/prop-2.jpg";
@@ -165,22 +171,22 @@ function GuestRow({
   onChange: (n: number) => void; min?: number;
 }) {
   return (
-    <div className="flex items-center justify-between py-3">
+    <div className="flex items-center justify-between gap-3 py-3">
       <div>
         <div className="text-sm font-semibold">{label}</div>
         <div className="text-xs text-muted-foreground">{hint}</div>
       </div>
-      <div className="flex items-center gap-3">
-        <Button
-          size="icon" variant="outline" className="h-8 w-8 rounded-full"
-          onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min}
-        ><Minus className="h-3.5 w-3.5" /></Button>
-        <span className="w-5 text-center text-sm font-medium">{value}</span>
-        <Button
-          size="icon" variant="outline" className="h-8 w-8 rounded-full"
-          onClick={() => onChange(value + 1)}
-        ><Plus className="h-3.5 w-3.5" /></Button>
-      </div>
+      <Input
+        type="number"
+        inputMode="numeric"
+        min={min}
+        value={value}
+        onChange={(e) => {
+          const v = parseInt(e.target.value, 10);
+          onChange(Number.isFinite(v) ? Math.max(min, v) : min);
+        }}
+        className="h-9 w-20 text-center"
+      />
     </div>
   );
 }
@@ -214,6 +220,7 @@ function DateButton({
 
 function PropertyDetail() {
   const { id } = Route.useParams();
+  const { user, openAuthModal } = useAuth();
   const [fav, setFav] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [modality, setModality] = useState<"Por Noche" | "Por Fin de Semana Completo">("Por Noche");
@@ -222,6 +229,12 @@ function PropertyDetail() {
   const [guests, setGuests] = useState({ adultos: 2, ninos: 0, mascotas: 0 });
   const [availRange, setAvailRange] = useState<DateRange | undefined>();
   const [showAllReviews, setShowAllReviews] = useState(false);
+
+  // Reserva
+  const [reserveOpen, setReserveOpen] = useState(false);
+  const [reserveBusy, setReserveBusy] = useState(false);
+  const [guestPhone, setGuestPhone] = useState("");
+  const [acceptLegal, setAcceptLegal] = useState(false);
 
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
@@ -258,7 +271,7 @@ function PropertyDetail() {
   const displayDescription = property?.description ?? DESCRIPTION;
 
   return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen">
         <Navbar />
 
         <main className="mx-auto max-w-7xl px-4 pb-16 pt-24 sm:px-6 lg:px-8">
