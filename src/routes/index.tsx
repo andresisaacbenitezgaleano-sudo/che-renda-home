@@ -37,14 +37,32 @@ const FALLBACKS = [p1, p2, p3, p4, p5, p6];
 
 function Index() {
   const [resetKey, setResetKey] = useState(0);
+  const [filters, setFilters] = useState<SearchFilters>({ guests: 0 });
 
   const { data: properties = [], isLoading } = useQuery({
-    queryKey: ["properties", "active"],
+    queryKey: ["properties", "active", filters],
     queryFn: async (): Promise<Property[]> => {
-      const { data, error } = await supabase
+      let q = supabase
         .from("properties")
-        .select("id, title, city, department, price, images")
-        .eq("status", "active")
+        .select("id, title, city, department, price, images, guests")
+        .eq("status", "active");
+
+      if (filters.department) q = q.eq("department", filters.department);
+      if (filters.city) q = q.eq("city", filters.city);
+      if (filters.guests > 0) q = q.gte("guests", filters.guests);
+
+      if (filters.dateFrom && filters.dateTo) {
+        const { data: conflicting } = await supabase
+          .from("bookings")
+          .select("property_id")
+          .lt("check_in", filters.dateTo.toISOString().slice(0, 10))
+          .gt("check_out", filters.dateFrom.toISOString().slice(0, 10))
+          .in("status", ["pending", "confirmed"]);
+        const blocked = (conflicting ?? []).map((b) => b.property_id);
+        if (blocked.length > 0) q = q.not("id", "in", `(${blocked.join(",")})`);
+      }
+
+      const { data, error } = await q
         .order("created_at", { ascending: false })
         .limit(24);
       if (error) throw error;
