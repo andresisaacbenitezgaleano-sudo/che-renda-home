@@ -531,22 +531,21 @@ function PropertyDetail() {
               <div className="sticky top-24 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-float)]">
                 <div className="mb-4 flex items-baseline justify-between gap-2">
                   <div>
-                    <span className="text-2xl font-bold">${basePrice}</span>
-                    <span className="ml-1 text-sm text-muted-foreground">USD</span>
+                    <span className="text-2xl font-bold">{formatGs(basePrice)}</span>
+                    <span className="ml-1 text-sm text-muted-foreground">/ {modalityLabel}</span>
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="gap-1">
-                        {modality} <ChevronDown className="h-3.5 w-3.5" />
+                      <Button variant="outline" size="sm" className="gap-1" disabled={!!property}>
+                        {modalityLabel} <ChevronDown className="h-3.5 w-3.5" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setModality("Por Noche")}>
-                        Por Noche
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setModality("Por Fin de Semana Completo")}>
-                        Por Fin de Semana Completo
-                      </DropdownMenuItem>
+                      {Object.entries(PRICE_MODALITY_LABEL).map(([key, label]) => (
+                        <DropdownMenuItem key={key} onClick={() => setModality(key)}>
+                          {label}
+                        </DropdownMenuItem>
+                      ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
