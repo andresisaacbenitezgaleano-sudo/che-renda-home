@@ -223,7 +223,7 @@ function PropertyDetail() {
   const { user, openAuthModal } = useAuth();
   const [fav, setFav] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [modality, setModality] = useState<"Por Noche" | "Por Fin de Semana Completo">("Por Noche");
+  const [modality, setModality] = useState<string>("per_night");
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [guests, setGuests] = useState({ adultos: 2, ninos: 0, mascotas: 0 });
