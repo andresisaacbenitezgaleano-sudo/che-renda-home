@@ -256,9 +256,9 @@ function PropertyDetail() {
       ? Math.max(0, differenceInCalendarDays(availRange.to, availRange.from))
       : 0;
 
-  const basePrice = property
-    ? Number(property.price)
-    : modality === "Por Noche" ? 180 : 420;
+  const basePrice = property ? Number(property.price) : 850000;
+  const effectiveModality = property?.price_modality ?? modality;
+  const modalityLabel = PRICE_MODALITY_LABEL[effectiveModality] ?? "por noche";
   const totalGuests = guests.adultos + guests.ninos;
   const guestLabel = `${totalGuests} huésped${totalGuests !== 1 ? "es" : ""}${
     guests.mascotas ? `, ${guests.mascotas} mascota${guests.mascotas > 1 ? "s" : ""}` : ""
@@ -269,6 +269,66 @@ function PropertyDetail() {
     ? [property.city, property.department].filter(Boolean).join(", ") || "Paraguay"
     : "San Bernardino, Paraguay";
   const displayDescription = property?.description ?? DESCRIPTION;
+
+  // Sync modality state once property loads
+  if (property && modality !== property.price_modality && modality === "per_night") {
+    // no-op — handled via effectiveModality above
+  }
+
+  const handleReserve = async () => {
+    if (!user) {
+      openAuthModal();
+      return;
+    }
+    if (!property) {
+      toast.error("Propiedad no disponible.");
+      return;
+    }
+    if (!checkIn || !checkOut) {
+      toast.error("Seleccioná fechas de entrada y salida.");
+      return;
+    }
+    if (checkOut <= checkIn) {
+      toast.error("La fecha de salida debe ser posterior a la de entrada.");
+      return;
+    }
+    const phone = guestPhone.trim();
+    if (!/^[+0-9 ()-]{6,}$/.test(phone)) {
+      toast.error("Ingresá un teléfono de contacto válido.");
+      return;
+    }
+    if (!acceptLegal) {
+      toast.error("Debés aceptar las normas y políticas.");
+      return;
+    }
+    setReserveBusy(true);
+    try {
+      const nightsCount = Math.max(1, differenceInCalendarDays(checkOut, checkIn));
+      const total = basePrice * (effectiveModality === "per_night" ? nightsCount : 1);
+      const { error } = await supabase.from("bookings").insert({
+        property_id: property.id,
+        guest_id: user.id,
+        host_id: property.host_id,
+        check_in: format(checkIn, "yyyy-MM-dd"),
+        check_out: format(checkOut, "yyyy-MM-dd"),
+        adults: guests.adultos,
+        children: guests.ninos,
+        pets: guests.mascotas,
+        contact_phone: phone,
+        total_price: total,
+        status: "pending",
+      });
+      if (error) throw error;
+      toast.success("¡Reserva enviada! El anfitrión te contactará pronto.");
+      setReserveOpen(false);
+      setGuestPhone("");
+      setAcceptLegal(false);
+    } catch (err: any) {
+      toast.error(err?.message ?? "No se pudo crear la reserva.");
+    } finally {
+      setReserveBusy(false);
+    }
+  };
 
   return (
       <div className="min-h-screen">
