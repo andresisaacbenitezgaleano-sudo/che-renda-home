@@ -589,9 +589,85 @@ function PropertyDetail() {
                   </Popover>
                 </div>
 
-                <Button className="mt-4 h-12 w-full rounded-xl bg-primary text-base font-semibold text-primary-foreground hover:bg-primary/90">
-                  Reservar
-                </Button>
+                <Dialog open={reserveOpen} onOpenChange={setReserveOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="mt-4 h-12 w-full rounded-xl bg-primary text-base font-semibold text-primary-foreground hover:bg-primary/90">
+                      Reservar
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="font-display text-xl">Confirmar reserva</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-2 text-sm">
+                      <div className="rounded-xl border border-border p-3">
+                        <div className="font-semibold">{displayTitle}</div>
+                        <div className="text-xs text-muted-foreground">{displayLocation}</div>
+                        <div className="mt-2 flex justify-between">
+                          <span className="text-muted-foreground">
+                            {checkIn && checkOut
+                              ? `${format(checkIn, "d MMM", { locale: es })} – ${format(checkOut, "d MMM yyyy", { locale: es })}`
+                              : "Seleccioná fechas arriba"}
+                          </span>
+                          <span>{guestLabel}</span>
+                        </div>
+                        <div className="mt-2 flex justify-between border-t border-border pt-2 font-semibold">
+                          <span>Total estimado</span>
+                          <span>
+                            {formatGs(
+                              basePrice *
+                                (effectiveModality === "per_night" && checkIn && checkOut
+                                  ? Math.max(1, differenceInCalendarDays(checkOut, checkIn))
+                                  : 1),
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="guest-phone">Teléfono de contacto *</Label>
+                        <Input
+                          id="guest-phone"
+                          type="tel"
+                          placeholder="+595 9XX XXXXXX"
+                          value={guestPhone}
+                          onChange={(e) => setGuestPhone(e.target.value)}
+                        />
+                      </div>
+                      <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <Checkbox
+                          checked={acceptLegal}
+                          onCheckedChange={(c) => setAcceptLegal(!!c)}
+                          className="mt-0.5"
+                        />
+                        <span>
+                          Acepto las normas de la casa y las{" "}
+                          <a
+                            href="/terminos-y-condiciones"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline underline-offset-2"
+                          >
+                            políticas de cancelación
+                          </a>{" "}
+                          de Che Renda T&T.
+                        </span>
+                      </label>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setReserveOpen(false)}
+                        disabled={reserveBusy}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button onClick={handleReserve} disabled={reserveBusy}>
+                        {reserveBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Confirmar reserva
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
 
                 <p className="mt-3 text-center text-xs text-muted-foreground">
                   Al presionar Reservar, aceptás las Normas de la Casa del Anfitrión
