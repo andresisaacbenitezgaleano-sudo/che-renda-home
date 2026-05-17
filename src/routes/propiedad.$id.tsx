@@ -223,7 +223,7 @@ function PropertyDetail() {
   const { user, openAuthModal } = useAuth();
   const [fav, setFav] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [modality, setModality] = useState<"Por Noche" | "Por Fin de Semana Completo">("Por Noche");
+  const [modality, setModality] = useState<string>("per_night");
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [guests, setGuests] = useState({ adultos: 2, ninos: 0, mascotas: 0 });
@@ -256,9 +256,9 @@ function PropertyDetail() {
       ? Math.max(0, differenceInCalendarDays(availRange.to, availRange.from))
       : 0;
 
-  const basePrice = property
-    ? Number(property.price)
-    : modality === "Por Noche" ? 180 : 420;
+  const basePrice = property ? Number(property.price) : 850000;
+  const effectiveModality = property?.price_modality ?? modality;
+  const modalityLabel = PRICE_MODALITY_LABEL[effectiveModality] ?? "por noche";
   const totalGuests = guests.adultos + guests.ninos;
   const guestLabel = `${totalGuests} huésped${totalGuests !== 1 ? "es" : ""}${
     guests.mascotas ? `, ${guests.mascotas} mascota${guests.mascotas > 1 ? "s" : ""}` : ""
@@ -269,6 +269,63 @@ function PropertyDetail() {
     ? [property.city, property.department].filter(Boolean).join(", ") || "Paraguay"
     : "San Bernardino, Paraguay";
   const displayDescription = property?.description ?? DESCRIPTION;
+
+
+
+  const handleReserve = async () => {
+    if (!user) {
+      openAuthModal();
+      return;
+    }
+    if (!property) {
+      toast.error("Propiedad no disponible.");
+      return;
+    }
+    if (!checkIn || !checkOut) {
+      toast.error("Seleccioná fechas de entrada y salida.");
+      return;
+    }
+    if (checkOut <= checkIn) {
+      toast.error("La fecha de salida debe ser posterior a la de entrada.");
+      return;
+    }
+    const phone = guestPhone.trim();
+    if (!/^[+0-9 ()-]{6,}$/.test(phone)) {
+      toast.error("Ingresá un teléfono de contacto válido.");
+      return;
+    }
+    if (!acceptLegal) {
+      toast.error("Debés aceptar las normas y políticas.");
+      return;
+    }
+    setReserveBusy(true);
+    try {
+      const nightsCount = Math.max(1, differenceInCalendarDays(checkOut, checkIn));
+      const total = basePrice * (effectiveModality === "per_night" ? nightsCount : 1);
+      const { error } = await supabase.from("bookings").insert({
+        property_id: property.id,
+        guest_id: user.id,
+        host_id: property.host_id,
+        check_in: format(checkIn, "yyyy-MM-dd"),
+        check_out: format(checkOut, "yyyy-MM-dd"),
+        adults: guests.adultos,
+        children: guests.ninos,
+        pets: guests.mascotas,
+        contact_phone: phone,
+        total_price: total,
+        status: "pending",
+      });
+      if (error) throw error;
+      toast.success("¡Reserva enviada! El anfitrión te contactará pronto.");
+      setReserveOpen(false);
+      setGuestPhone("");
+      setAcceptLegal(false);
+    } catch (err: any) {
+      toast.error(err?.message ?? "No se pudo crear la reserva.");
+    } finally {
+      setReserveBusy(false);
+    }
+  };
 
   return (
       <div className="min-h-screen">
@@ -471,22 +528,21 @@ function PropertyDetail() {
               <div className="sticky top-24 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-float)]">
                 <div className="mb-4 flex items-baseline justify-between gap-2">
                   <div>
-                    <span className="text-2xl font-bold">${basePrice}</span>
-                    <span className="ml-1 text-sm text-muted-foreground">USD</span>
+                    <span className="text-2xl font-bold">{formatGs(basePrice)}</span>
+                    <span className="ml-1 text-sm text-muted-foreground">/ {modalityLabel}</span>
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="gap-1">
-                        {modality} <ChevronDown className="h-3.5 w-3.5" />
+                      <Button variant="outline" size="sm" className="gap-1" disabled={!!property}>
+                        {modalityLabel} <ChevronDown className="h-3.5 w-3.5" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setModality("Por Noche")}>
-                        Por Noche
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setModality("Por Fin de Semana Completo")}>
-                        Por Fin de Semana Completo
-                      </DropdownMenuItem>
+                      {Object.entries(PRICE_MODALITY_LABEL).map(([key, label]) => (
+                        <DropdownMenuItem key={key} onClick={() => setModality(key)}>
+                          {label}
+                        </DropdownMenuItem>
+                      ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -529,9 +585,85 @@ function PropertyDetail() {
                   </Popover>
                 </div>
 
-                <Button className="mt-4 h-12 w-full rounded-xl bg-primary text-base font-semibold text-primary-foreground hover:bg-primary/90">
-                  Reservar
-                </Button>
+                <Dialog open={reserveOpen} onOpenChange={setReserveOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="mt-4 h-12 w-full rounded-xl bg-primary text-base font-semibold text-primary-foreground hover:bg-primary/90">
+                      Reservar
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="font-display text-xl">Confirmar reserva</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-2 text-sm">
+                      <div className="rounded-xl border border-border p-3">
+                        <div className="font-semibold">{displayTitle}</div>
+                        <div className="text-xs text-muted-foreground">{displayLocation}</div>
+                        <div className="mt-2 flex justify-between">
+                          <span className="text-muted-foreground">
+                            {checkIn && checkOut
+                              ? `${format(checkIn, "d MMM", { locale: es })} – ${format(checkOut, "d MMM yyyy", { locale: es })}`
+                              : "Seleccioná fechas arriba"}
+                          </span>
+                          <span>{guestLabel}</span>
+                        </div>
+                        <div className="mt-2 flex justify-between border-t border-border pt-2 font-semibold">
+                          <span>Total estimado</span>
+                          <span>
+                            {formatGs(
+                              basePrice *
+                                (effectiveModality === "per_night" && checkIn && checkOut
+                                  ? Math.max(1, differenceInCalendarDays(checkOut, checkIn))
+                                  : 1),
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="guest-phone">Teléfono de contacto *</Label>
+                        <Input
+                          id="guest-phone"
+                          type="tel"
+                          placeholder="+595 9XX XXXXXX"
+                          value={guestPhone}
+                          onChange={(e) => setGuestPhone(e.target.value)}
+                        />
+                      </div>
+                      <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <Checkbox
+                          checked={acceptLegal}
+                          onCheckedChange={(c) => setAcceptLegal(!!c)}
+                          className="mt-0.5"
+                        />
+                        <span>
+                          Acepto las normas de la casa y las{" "}
+                          <a
+                            href="/terminos-y-condiciones"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline underline-offset-2"
+                          >
+                            políticas de cancelación
+                          </a>{" "}
+                          de Che Renda T&T.
+                        </span>
+                      </label>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setReserveOpen(false)}
+                        disabled={reserveBusy}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button onClick={handleReserve} disabled={reserveBusy}>
+                        {reserveBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Confirmar reserva
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
 
                 <p className="mt-3 text-center text-xs text-muted-foreground">
                   Al presionar Reservar, aceptás las Normas de la Casa del Anfitrión
