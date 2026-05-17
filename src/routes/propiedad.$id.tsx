@@ -270,10 +270,7 @@ function PropertyDetail() {
     : "San Bernardino, Paraguay";
   const displayDescription = property?.description ?? DESCRIPTION;
 
-  // Sync modality state once property loads
-  if (property && modality !== property.price_modality && modality === "per_night") {
-    // no-op — handled via effectiveModality above
-  }
+
 
   const handleReserve = async () => {
     if (!user) {
