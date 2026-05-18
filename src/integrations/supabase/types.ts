@@ -27,6 +27,7 @@ export type Database = {
           id: string
           pets: number
           property_id: string
+          reserva_codigo: string | null
           status: Database["public"]["Enums"]["booking_status"]
           total_price: number
           updated_at: string
@@ -43,6 +44,7 @@ export type Database = {
           id?: string
           pets?: number
           property_id: string
+          reserva_codigo?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_price?: number
           updated_at?: string
@@ -59,6 +61,7 @@ export type Database = {
           id?: string
           pets?: number
           property_id?: string
+          reserva_codigo?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_price?: number
           updated_at?: string
@@ -166,10 +169,13 @@ export type Database = {
           bio: string | null
           created_at: string
           email: string | null
+          fecha_aceptacion: string | null
           full_name: string | null
           id: string
           phone: string | null
+          terminos_aceptados: boolean
           updated_at: string
+          version_terminos: string
         }
         Insert: {
           accepted_at?: string | null
@@ -179,10 +185,13 @@ export type Database = {
           bio?: string | null
           created_at?: string
           email?: string | null
+          fecha_aceptacion?: string | null
           full_name?: string | null
           id: string
           phone?: string | null
+          terminos_aceptados?: boolean
           updated_at?: string
+          version_terminos?: string
         }
         Update: {
           accepted_at?: string | null
@@ -192,10 +201,13 @@ export type Database = {
           bio?: string | null
           created_at?: string
           email?: string | null
+          fecha_aceptacion?: string | null
           full_name?: string | null
           id?: string
           phone?: string | null
+          terminos_aceptados?: boolean
           updated_at?: string
+          version_terminos?: string
         }
         Relationships: []
       }
