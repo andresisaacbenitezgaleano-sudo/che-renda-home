@@ -302,21 +302,28 @@ function PropertyDetail() {
     try {
       const nightsCount = Math.max(1, differenceInCalendarDays(checkOut, checkIn));
       const total = basePrice * (effectiveModality === "per_night" ? nightsCount : 1);
-      const { error } = await supabase.from("bookings").insert({
-        property_id: property.id,
-        guest_id: user.id,
-        host_id: property.host_id,
-        check_in: format(checkIn, "yyyy-MM-dd"),
-        check_out: format(checkOut, "yyyy-MM-dd"),
-        adults: guests.adultos,
-        children: guests.ninos,
-        pets: guests.mascotas,
-        contact_phone: phone,
-        total_price: total,
-        status: "pending",
-      });
+      const { data: inserted, error } = await supabase
+        .from("bookings")
+        .insert({
+          property_id: property.id,
+          guest_id: user.id,
+          host_id: property.host_id,
+          check_in: format(checkIn, "yyyy-MM-dd"),
+          check_out: format(checkOut, "yyyy-MM-dd"),
+          adults: guests.adultos,
+          children: guests.ninos,
+          pets: guests.mascotas,
+          contact_phone: phone,
+          total_price: total,
+          status: "pending_payment" as any,
+        })
+        .select("reserva_codigo")
+        .single();
       if (error) throw error;
-      toast.success("¡Reserva enviada! El anfitrión te contactará pronto.");
+      const codigo = (inserted as any)?.reserva_codigo ?? "#CR-2026-NUEVO";
+      toast.success(`Reserva ${codigo} creada. Pago pendiente vía SIPAP.`, {
+        description: "El anfitrión te contactará para coordinar.",
+      });
       setReserveOpen(false);
       setGuestPhone("");
       setAcceptLegal(false);

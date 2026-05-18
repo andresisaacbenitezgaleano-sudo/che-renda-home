@@ -59,7 +59,7 @@ function Index() {
           .select("property_id")
           .lt("check_in", filters.dateTo.toISOString().slice(0, 10))
           .gt("check_out", filters.dateFrom.toISOString().slice(0, 10))
-          .in("status", ["pending", "confirmed"]);
+          .in("status", ["pending_payment" as any, "pending", "confirmed"]);
         const blocked = (conflicting ?? []).map((b) => b.property_id);
         if (blocked.length > 0) q = q.not("id", "in", `(${blocked.join(",")})`);
       }
