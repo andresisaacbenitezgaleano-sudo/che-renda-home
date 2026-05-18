@@ -67,6 +67,7 @@ export function AuthModal() {
           full_name: fullName.trim(),
           accepted_privacy: true,
           accepted_terms: true,
+          version_terminos: "1.0",
         },
       },
     });
